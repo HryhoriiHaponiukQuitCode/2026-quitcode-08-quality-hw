@@ -1,6 +1,6 @@
 // Прибирання після прогону (teardown проєкту setup): видаляє всіх uat-*@example.test, навіть залишки обірваних
 // прогонів, і падає, якщо хоч один лишився. Підсумок — у test-results/uat-cleanup.json (його читає звіт UAT).
-// Без SUPABASE_SECRET_KEY (прогін лише AC, що нічого не пишуть: --grep-invert @writes) прибирати нічого — тесту немає.
+// Без SUPABASE_SECRET_KEY (прогін лише AC, що нічого не пишуть: --grep-invert '@writes') прибирати нічого — тесту немає.
 import { writeFileSync } from "node:fs";
 import { expect, test as teardown } from "@playwright/test";
 import { deleteUatUsers, deletedThisRun, hasAdminKey } from "./support/admin";

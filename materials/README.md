@@ -219,7 +219,7 @@ npm pkg set scripts.uat:review="node scripts/uat/review.mjs && node scripts/uat/
 | `npm run mutation:ts [-- --mutate <файл>]` | Stryker |
 | `npm run mutation:sql [-- --only P1,P2] [-- --markdown]` | SQL-мутації (`scripts/mutants.mjs`, `kind: "sql"`); TS-точкові — `node scripts/mutation-check.mjs --kind ts` |
 | `npm run test:e2e` | Playwright на локальній збірці (так само в `e2e.yml`) |
-| `npm run uat -- --url <прод>` | UAT: Playwright → рецензент → звіт у `docs/qa/uat/<дата>/`. Решта аргументів іде в Playwright, напр. `--grep-invert @writes` |
+| `npm run uat -- --url <прод>` | UAT: Playwright → рецензент → звіт у `docs/qa/uat/<дата>/`. Решта аргументів іде в Playwright, напр. `--grep-invert '@writes'` (у PowerShell — лише в лапках) |
 | `npm run uat:nc -- --url <прод>` | негативні контролі (тег `@negative-control`), звіт — `test-results/uat-report-nc/` |
 | `npm run uat:review` | повторний розбір наявних пакетів і новий звіт без нового прогону Playwright |
 
@@ -270,4 +270,6 @@ accounts.txt
   рахує лише цей прогін (у демо журнал накопичується між прогонами).
 - **`e2e.yml`:** коментарі без деталей даних демо; зразки в `examples/` — з приміткою «зразок формату», назва NC-2 й тексти
   кроків — безособово.
+- **Коментарі `run.mjs`, `cleanup.teardown.ts`, `admin.ts`:** `--grep-invert '@writes'` у лапках — у PowerShell без лапок
+  `@writes` стає оператором splatting, і Playwright отримує `--grep-invert` без значення.
 - Решта файлів — без змін, крім рядка «джерело» в коментарях.

@@ -132,7 +132,8 @@ report.mjs: docs/qa/uat/<YYYY-MM-DD>/report.md + manifest.json + frames/  ──
 
 - Preview і прод ходять в **одну** вашу базу Supabase, і в ній же приймає роботу PM.
 - **За замовчуванням UAT лише читає:** відмови, стани інтерфейсу, перегляд власних даних. Цього досить для 3 AC
-  домашки. Прогін лише таких AC: `npm run uat -- --url … --grep-invert @writes`.
+  домашки. Прогін лише таких AC: `npm run uat -- --url … --grep-invert '@writes'`. Лапки обов'язкові в
+  PowerShell: без них `@writes` — оператор splatting, і Playwright отримає `--grep-invert` без значення.
 - **AC, що змінює дані** (тег `@writes`), — лише з синтетичним `uat-<запуск>@example.test` (`uatEmail()` з
   `tests/e2e/support/admin.ts`) і прибиранням: `test.afterAll` з `deleteUatUsers(…)`, а teardown `cleanup` після
   прогону видаляє всі `uat-*` і падає, якщо щось лишилось. Таблиці з FK на користувача без `on delete cascade` —
@@ -199,7 +200,7 @@ Vitest не чіпав територію Playwright. Потім рядки ва
 Інший шлях — власний workflow проти вашого проду (у демо його не будували):
 
 - `workflow_dispatch` з входом `base_url`, `npx playwright install --with-deps chromium --only-shell`,
-  `npm run uat -- --url <base_url> --grep-invert @writes`;
+  `npm run uat -- --url <base_url> --grep-invert '@writes'`;
 - пароль — GitHub Secrets (краще environment `uat`), акаунт **з найменшими правами**: артефакти публічного репо може
   завантажити будь-хто;
 - звіт, кадри й `manifest.json` — `actions/upload-artifact`;

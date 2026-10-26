@@ -470,7 +470,7 @@ npx playwright show-report test-results/html
   розбір — $0,0023 і $0,0026 за AC на Haiku, $0,0496 за AC, що дійшов до Sonnet; разом $0,0546 за цінами API. На
   підписці окремо не тарифікується, а рахується в ліміти плану.
 - **Код виходу 1** — лише якщо якийсь AC має FAIL. NEEDS-HUMAN — рішення за PM; звіт пишеться завжди.
-- **Лише AC, що нічого не пишуть:** `npm run uat -- --url … --grep-invert @writes`.
+- **Лише AC, що нічого не пишуть:** `npm run uat -- --url … --grep-invert '@writes'` (у PowerShell — лише в лапках).
 - **Без Claude Code:** `node scripts/uat/run.mjs --url … --skip-review` — звіт буде, але кожен вердикт NEEDS-HUMAN.
 - **Ще раз розібрати ті самі кадри** без нового прогону Playwright: `npm run uat:review`.
 - Тест упав? Спершу з'ясуйте, чия це вада: продукту (→ виправлення окремим PR, тест з AC ID), тесту (локатор, другий
@@ -593,7 +593,7 @@ gh label create "відхилення" --color D93F0B
     chromium --only-shell`, `npm run uat -- --url <base_url>`; звіт, кадри й `manifest.json` —
     `actions/upload-artifact`. Пароль — GitHub Secrets (краще environment `uat`), акаунт **з найменшими правами**:
     артефакти публічного репо може завантажити будь-хто. `SUPABASE_SECRET_KEY` не додаємо, тож лише AC, що нічого не
-    пишуть (`--grep-invert @writes`). Вердикт агента — локально на завантаженому артефакті або в CI: підписка —
+    пишуть (`--grep-invert '@writes'`). Вердикт агента — локально на завантаженому артефакті або в CI: підписка —
     `CLAUDE_CODE_OAUTH_TOKEN` з `claude setup-token`; API — достатньо `ANTHROPIC_API_KEY` у середовищі (`review.mjs`
     змінювати не треба). У демо цей
     шлях не будували.
