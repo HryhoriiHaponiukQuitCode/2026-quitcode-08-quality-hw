@@ -111,8 +111,7 @@ const E2E_DIR = /^tests\/e2e\//;
 export const isRunByVitest = (r) => !E2E_DIR.test(r) && /^(?:src|tests)\/(?:.+\/)?[^/]+\.test\.tsx?$/.test(r);
 export const isRunByPlaywright = (r) => /^tests\/e2e\/(?:.+\/)?[^/]+\.spec\.ts$/.test(r);
 export const isRunByCi = (r) => isRunByVitest(r) || isRunByPlaywright(r);
-// (У демо тут ще є псевдонім isRunByNpmTest для сумісності; у шаблоні його ніхто не імпортує, і fallow позначив би
-// його невикористаним експортом, тож у materials його прибрано.)
+// Старий псевдонім isRunByNpmTest прибрано: його ніхто не імпортує, і fallow позначає його невикористаним експортом.
 export const skipNonSource = (r) =>
   /(^|\/)(node_modules|\.next|\.git|coverage|dist|build)(\/|$)/.test(r) || /^tests\/fixtures(\/|$)/.test(r);
 
