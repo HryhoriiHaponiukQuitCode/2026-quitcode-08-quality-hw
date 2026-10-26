@@ -1,0 +1,239 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit config — review of Workshop 8 submission PRs ("Якість: тести, evals, AI code review").
+# The work itself lives in each participant's own repository (model v2, as in WS6–WS7): the PM's requirements repo
+# <pm>/<team-slug>-spec (slice-3 requirements as issues «Вимога» or docs/ files, the «Як доводимо» section in
+# «Продукт», questions as issues «Питання до вимог») and every developer's own implementation repo <dev>/<team-slug>
+# (D0: /api/health, smoke.yml, accounts.zip; quality layer for 3 AC: gates, test quality with mutation proof, UAT on
+# prod with an agent verdict, reviewer eval; PM acceptance deviations as issues «Відхилення від вимог»). The
+# instructor's pipeline grades that repo at the main SHA from the submission file. Here CodeRabbit checks ONLY the
+# submission PR: one new file submissions/<team-slug>/<github-login>.md, its fields, and that nothing else changed.
+# Every check is STATIC over the diff and the PR description: no network, no npm, no cloning of linked repositories.
+# Limits: custom check names < 50 chars, tone_instructions ≤ 250 chars — otherwise CodeRabbit
+# silently ignores the WHOLE file (tells: review in English, docstring check reappears).
+
+language: "uk-UA"
+tone_instructions: >-
+  Ментор курсу. Українською, коротко й доброзичливо. Перевіряєш лише файл здачі WS8 і опис PR.
+  Статуси: ✅ зроблено, ⚠️ частково, ❌ бракує.
+
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  in_progress_fortune: false
+
+  auto_review:
+    enabled: true
+    drafts: true
+    base_branches:
+      - ".*"
+    ignore_title_keywords:
+      - "WIP"
+      - "[skip review]"
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "renovate[bot]"
+      - "github-actions[bot]"
+
+  # Every path of the repository is listed, so that changes outside submissions/ are visible
+  # to the "nothing else changed" check.
+  path_filters:
+    - "submissions/**"
+    - "README.md"
+    - "AGENTS.md"
+    - "CLAUDE.md"
+    - "LICENSE"
+    - "docs/**"
+    - "materials/**"
+    - ".github/**"
+    - ".coderabbit.yaml"
+    - ".gitignore"
+    - ".gitattributes"
+    - "**"
+
+  path_instructions:
+    - path: "submissions/*/*.md"
+      instructions: |
+        Файл здачі WS8. Статичне рев'ю, посилань не відкривай і нічого не запускай.
+        Шлях: submissions/<team-slug>/<github-login>.md; team-slug — рівно один із
+        property-workflows, therapy-scheduling, school-purchasing, leave-portal; ім'я файла
+        (без .md) збігається з полем «GitHub-логін» і, якщо видно, з логіном автора PR (без
+        урахування регістру). Розділ «Дані»: «Роль» — pm або dev; «Команда» — та сама, що тека;
+        «Ваше репо» — https://github.com/<owner>/<repo>, owner — «GitHub-логін» (інакше ⚠️); назва
+        репо для pm зазвичай <team-slug>-spec, для dev — <team-slug> (інша — ⚠️, не ❌); «SHA» — рівно
+        40 символів [0-9a-f] (коротший SHA, гілка чи тег — ❌); «Репо вимог PM» — https://github.com/<owner>/<repo>,
+        для pm — те саме, що «Ваше репо»; «Прод-URL» — для dev https://… (зазвичай *.vercel.app), для pm — «—».
+        Роль pm заповнює розділ «PM», а розділ «Розробник» — рівно «—»; роль dev — навпаки.
+        pm: посилання A, C, D — у «Ваше репо»; «Сховище вимог» — issues, docs або docs/; «Зріз 3» — одне
+        речення; «Вимоги зрізу 3» — …/issues/N або …/blob/<SHA>/docs/requirements/…; «Відмовні AC і AC про
+        стан інтерфейсу» — на кожну вимогу щонайменше 2 AC ID відмов щонайменше двох різних видів (чужі дані /
+        заборонена роль / не увійшов) і щонайменше 1 AC ID стану (інакше ⚠️); AC ID —
+        AC-<2–12 великих латинських літер>-<дві цифри>; «Самоперевірка за чеклістом» — …/issues/N#issuecomment-M,
+        …/blob/<SHA>/…#L<N> або …/commit/<sha>; «Roadmap і матриця прав для зрізу 3» — коментар чи коміт;
+        «Як доводимо» — …/issues/N з коментарем або …/blob/<SHA>/docs/product.md(#…); «Питання, на які ви
+        відповіли» — …/issues/N або «питань не було»; «Зміни вимог із журналом змін» — щонайменше одне
+        посилання на коментар, коміт чи файл («змін не було» — ⚠️: рубрика D вимагає щонайменше одну зміну,
+        без питань — «власне рішення PM»). Таблиця «Приймання за UAT»: щонайменше 2 різні логіни розробників,
+        у кожного рядки на його AC (зазвичай 3), або рядок «не прийнято: <причина, дата>» і план приймання для
+        бракуючого; «Вердикт агента» — PASS, FAIL або NEEDS-HUMAN; «Ваше рішення» — ✅, ❌ або «NEEDS-HUMAN → …»;
+        у «Як перевірено» акаунти — лише адреси *@example.test; кожен ❌ має посилання
+        https://github.com/<dev>/<repo>/issues/N у репо розробника (owner ≠ «Ваше репо» — це нормально).
+        «Звірка …» — текст про знайдену розбіжність або «перевірено: розбіжностей немає» з тим, що звірено;
+        «Підпис у репо розробників» — посилання на коментарі в репо розробників.
+        dev: розділ «D0»: «/api/health» — https://…/api/health з тим самим хостом, що «Прод-URL»; «Зелений
+        прогін smoke» — …/actions/runs/N у «Ваше репо»; «accounts.zip на SHA» — …/blob/<SHA>/accounts.zip у
+        «Ваше репо» (посилання на accounts.txt чи будь-який інший файл з паролями — ❌); «Ролі тестових
+        акаунтів» — лише ролі й адреси *@example.test, щонайменше одна роль; «Версія next» — 16.4.1 чи новіша
+        (16.4.0 і нижче — ❌: D0 не виконано). «3 AC» — рівно три AC ID з видом (щонайменше одна відмова в
+        браузері й один стан інтерфейсу, інакше ⚠️). «QA proof pack» — …/blob/<SHA>/docs/qa/proof-pack.md.
+        PR-поля — …/pull/N у «Ваше репо»; прогони — …/actions/runs/N; «Обов'язкові перевірки в solo-main» —
+        назви jobs; «Якість тестів — убитий мутант» — файл:рядок, AC ID і посилання …/blob/<SHA>/…#L<N> на тест;
+        «SQL-мутація» — …/pull/N або «немає PGlite-гарнесу»; «UAT — специфікації» — щонайменше одне посилання
+        …/blob/<SHA>/tests/e2e/….spec.ts; «UAT — звіт на проді» — …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md;
+        «Рядки docs/conformance.md» — AC ID зі статусами; «Eval рецензента» — PR …/pull/N, таблиця й правило —
+        …/pull/N#issuecomment-M чи …/commit/<sha>; «Відхилення від PM» — …/issues/N з відповідями або
+        «не надходило». Бонус — «—» або опис із посиланням.
+        Посилання на accounts.zip — нормально: це зашифрований архів тестових акаунтів за схемою курсу.
+        Плейсхолдери <…>, «…» чи незаповнені коментарі-підказки замість значень — ⚠️. Повне ім'я людини
+        у файлі — ⚠️ (ім'я лише в описі PR; логіни — нормально).
+        Значення секретів чи паролі (sb_secret_, sb_publishable_ зі значенням, sbp_, eyJ…, «пароль: …»,
+        будь-яке значення, назване паролем, зокрема паролем від accounts.zip, рядки підключення з паролем,
+        postgresql://…), вміст accounts.txt, посилання-запрошення з token_hash, email не з домену example.test — ❌.
+
+    - path: "submissions/_template.md"
+      instructions: |
+        Шаблон здачі — матеріал курсу, учасник його не змінює. Будь-яка зміна — ❌:
+        скопіюйте шаблон у submissions/<team-slug>/<github-login>.md.
+
+    - path: "submissions/README.md"
+      instructions: |
+        Інструкція здачі — матеріал курсу. Будь-яка зміна — ❌.
+
+    - path: "submissions/*/.gitkeep"
+      instructions: |
+        Службові файли тек команд. Видалення чи зміна — ❌.
+
+    - path: "docs/**"
+      instructions: |
+        Інструкції курсу (walkthrough-pm, walkthrough-dev, deploy-d0, gates-guide, testing-guide, uat-guide). У PR
+        здачі не змінюються — будь-яка зміна ❌. Помилку в матеріалах повідомляють окремим issue, а не в PR здачі.
+
+    - path: "materials/**"
+      instructions: |
+        Матеріали курсу для копіювання в репо розробника (ворота, конфіги покриття й мутацій, Playwright і UAT,
+        /api/health і smoke.yml, форма issue, шифрування accounts.zip, шаблон proof pack). Будь-яка зміна в PR
+        здачі — ❌.
+
+    - path: ".github/**"
+      instructions: |
+        Шаблон PR курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "README.md"
+      instructions: |
+        README курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "AGENTS.md"
+      instructions: |
+        Правила агента для репозиторію курсу. Будь-яка зміна в PR здачі — ❌.
+
+    - path: "CLAUDE.md"
+      instructions: |
+        Імпорт AGENTS.md для Claude Code. Будь-яка зміна в PR здачі — ❌.
+
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+
+    title:
+      mode: "warning"
+      requirements: >
+        PR title should follow: "WS8: <participant full name>" (two words, a real name, not a GitHub login).
+
+    # The built-in description check takes only `mode`; the name requirement is a custom check.
+    description:
+      mode: "warning"
+
+    custom_checks:
+      - mode: "warning"
+        name: "Опис PR: ім'я та прізвище"
+        instructions: >
+          Static review of the PR description only; do NOT review the diff or execute anything.
+          The description MUST contain a filled-in "Ім'я та Прізвище" field under the "Учасник"
+          heading with the participant's real full name (two words). An empty field, a leftover
+          placeholder or template comment, or only a GitHub login is NOT acceptable: say so and ask
+          the author to add it. Also check that "Роль" (PM or розробник) and "Команда" are filled and that the
+          Definition of Done checklist for the participant's role is filled in rather than left as
+          unchecked template boxes. PASS if all hold; FAIL otherwise. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Лише один файл здачі"
+        instructions: >
+          Static review of the diff only. PASS only if the PR adds exactly one file and changes
+          nothing else, and that file is submissions/<team-slug>/<github-login>.md where team-slug
+          is one of property-workflows, therapy-scheduling, school-purchasing, leave-portal, and
+          github-login matches the "GitHub-логін" field inside the file (case-insensitive) and, when
+          visible, the PR author's login. FAIL if any other file is added, modified or deleted
+          (README.md, AGENTS.md, CLAUDE.md, LICENSE, docs/, materials/, .github/, .coderabbit.yaml,
+          .gitignore, .gitattributes, submissions/README.md, submissions/_template.md, .gitkeep files,
+          another participant's submission), or if the file is placed elsewhere or named differently.
+          Name every offending path. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Поля файлу здачі заповнено"
+        instructions: >
+          Static review of the submission file only; do NOT open links or run anything. Check the
+          "Дані" section: Роль is pm or dev; Команда equals the folder name; "Ваше репо" is
+          https://github.com/<owner>/<repo> (owner should equal GitHub-логін; repo is normally
+          <team-slug>-spec for pm and <team-slug> for dev — a different owner or name is a warning to
+          mention, not a FAIL); SHA is exactly 40 lowercase hex characters (a short SHA, branch or tag
+          name is a FAIL); "Репо вимог PM" is https://github.com/<owner>/<repo> and, for pm, equals
+          "Ваше репо"; Прод-URL is an https URL for dev and "—" for pm. Role pm fills the "PM" section
+          and the "Розробник" section is exactly "—"; role dev does the opposite. All links are full
+          https:// links (pull requests /pull/N, issues /issues/N, comments /issues/N#issuecomment-M or
+          /pull/N#issuecomment-M, commits /commit/<sha>, workflow runs /actions/runs/N, files /blob/... or /tree/...).
+          For pm: "Зріз 3" is one sentence; "Вимоги зрізу 3", "Самоперевірка за чеклістом", "Roadmap і матриця
+          прав для зрізу 3" and "Як доводимо" link into "Ваше репо"; "Відмовні AC і AC про стан інтерфейсу"
+          lists, per requirement, at least two refusal AC IDs of at least two different kinds (чужі дані /
+          заборонена роль / не увійшов) and at least one UI-state AC ID; "Питання, на які ви відповіли" are
+          /issues/N links or "питань не було"; "Зміни вимог із журналом змін" has at least one link to a
+          comment, commit or file ("змін не було" is a FAIL: rubric D requires at least one change, a "власне
+          рішення PM" if no questions came); the "Приймання за UAT" table has rows for at least two different
+          developer logins (or a row "не прийнято: <причина, дата>" plus an acceptance plan for the missing one),
+          "Вердикт агента" is PASS, FAIL or NEEDS-HUMAN, accounts only as *@example.test addresses, every ❌ row
+          links to an /issues/N in a developer repository; "Звірка" and "Підпис у репо розробників" are filled.
+          For dev: the D0 block has an https://…/api/health link on the Прод-URL host, an /actions/runs/N link
+          for smoke, a /blob/<SHA>/accounts.zip link in "Ваше репо", roles with *@example.test addresses only,
+          and a next version of 16.4.1 or later (16.4.0 or older is a FAIL); "3 AC" names exactly three AC IDs
+          with their kind; "QA proof pack" is a /blob/<SHA>/docs/qa/proof-pack.md link; gates, test-quality,
+          UAT and reviewer-eval fields are /pull/N, /actions/runs/N, /blob/<SHA>/... or #issuecomment-M links
+          in "Ваше репо" as the template asks; "UAT — звіт на проді" points to
+          /blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md; "SQL-мутація" is a /pull/N link or
+          "немає PGlite-гарнесу"; "Відхилення від PM" lists /issues/N links or "не надходило".
+          Бонус is "—" or a description with a link.
+          Placeholders such as <…>, "…" or untouched template comments instead of values are a FAIL.
+          List every missing or malformed field. Answer in Ukrainian.
+
+      - mode: "warning"
+        name: "Анонімізація, секрети й паролі"
+        instructions: >
+          Static review of the diff only. FAIL if the submission file contains a secret value
+          (sb_secret_ or sb_publishable_ followed by a value, sbp_ tokens, JWT-looking eyJ strings,
+          passwords or anything labelled as a password, including a password for accounts.zip, database URLs
+          with a password, invitation links with token_hash), the contents of accounts.txt or a link to an
+          accounts.txt file, an email address outside the example.test domain, a person's full name (names
+          belong only in the PR description; GitHub logins are fine), or what looks like a real client or
+          company name rather than the four team slugs and generic product words. A link to accounts.zip is
+          fine: it is the course's encrypted test-accounts archive. Vendor names such as Supabase, Vercel,
+          GitHub, Claude, CodeRabbit, Playwright, Stryker, fallow or 7-Zip are fine. PASS otherwise. Answer in
+          Ukrainian.
+
+chat:
+  auto_reply: true
