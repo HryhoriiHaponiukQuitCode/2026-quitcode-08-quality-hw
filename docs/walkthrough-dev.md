@@ -157,7 +157,7 @@ npm pkg set scripts.gates="npm run lint && npm run typecheck && fallow audit --b
 npm pkg set scripts.test:coverage="vitest run --config vitest.coverage.config.mts --coverage"
 npm pkg set scripts.coverage:summary="node scripts/coverage-summary.mjs"
 npm ci
-npx fallow --no-cache > fallow-baseline.txt   # повний прогін: усе, що вже є в репо; файл не комітимо
+cmd /c "npx fallow --no-cache > fallow-baseline.txt"   # повний прогін: усе, що вже є в репо; файл не комітимо
 ```
 
 - **`eslint.config.mjs` замінюється цілком**, якщо ваш не відрізняється від шаблону. Змінювали — перенесіть із
@@ -166,8 +166,11 @@ npx fallow --no-cache > fallow-baseline.txt   # повний прогін: ус�
   `npm run test:coverage`.
 - Допишіть у `.gitignore` блок з [materials/README](../materials/README.md#gitignore) (там і `accounts.txt`, і теки
   Stryker та Playwright на наступні кроки).
-- На чистому шаблоні з матеріалами повний прогін дає дві знахідки, як і в демо: невикористаний файл
-  `src/lib/supabase/client.ts` і невикористаний експорт `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs`. Решта — ваша.
+- На чистому шаблоні з матеріалами повний прогін дає дві знахідки мертвого коду, як і в демо: невикористаний файл
+  `src/lib/supabase/client.ts` і невикористаний експорт `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs`. Плюс кілька
+  попереджень про складність (health) у скриптах шаблону, `src/app/page.tsx`, `src/app/login/actions.ts` і
+  `src/app/api/health/route.ts` — їх теж розберіть у таблиці. Решта — ваша.
+- `cmd /c` — щоб файл лишився в UTF-8: `>` у Windows PowerShell 5.1 пише UTF-16 і може зіпсувати символи виводу fallow.
 
 Промпт агенту:
 
@@ -513,8 +516,8 @@ NC-1 → FAIL, NC-2 → NEEDS-HUMAN.
 1. Закомітьте `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`), специфікації,
    `playwright.config.ts`, скрипти. Відео, trace й HTML-звіт (`test-results/`) — **не** в git.
 2. `docs/conformance.md`: рядки ваших 3 AC → `реалізовано` зі шляхом до специфікації; `npm run ac:coverage` зелений.
-3. Опис PR: таблиця C з proof pack, рядки негативного контролю. Відео перетягніть в опис PR (0,8–1,7 МБ на AC у
-   демо). Якщо GitHub не приймає `.webm` — `ffmpeg -i video.webm video.mp4`.
+3. Опис PR: таблиця C з proof pack, рядки негативного контролю. Відео перетягніть в опис PR (відео й trace разом —
+   0,8–1,7 МБ на AC у демо). Якщо GitHub не приймає `.webm` — `ffmpeg -i video.webm video.mp4`.
 4. `@coderabbitai review` → злиття.
 5. У чат команди: «UAT готовий: звіт <посилання>, PR <посилання>, AC: …. Прийміть, будь ласка, до кінця 03.11».
 
@@ -591,7 +594,8 @@ gh label create "відхилення" --color D93F0B
     `actions/upload-artifact`. Пароль — GitHub Secrets (краще environment `uat`), акаунт **з найменшими правами**:
     артефакти публічного репо може завантажити будь-хто. `SUPABASE_SECRET_KEY` не додаємо, тож лише AC, що нічого не
     пишуть (`--grep-invert @writes`). Вердикт агента — локально на завантаженому артефакті або в CI: підписка —
-    `CLAUDE_CODE_OAUTH_TOKEN` з `claude setup-token`, без `--bare`; API — `ANTHROPIC_API_KEY` з `--bare`. У демо цей
+    `CLAUDE_CODE_OAUTH_TOKEN` з `claude setup-token`; API — достатньо `ANTHROPIC_API_KEY` у середовищі (`review.mjs`
+    змінювати не треба). У демо цей
     шлях не будували.
   - Доказ — зелений прогін з `workflow_dispatch` (посилання на run) і артефакт.
 - **Eval свого скіла** (наприклад, `spec-review` з шаблону): ≥3 кейси × ≥3 прогони, pass rate зі скілом і без нього.

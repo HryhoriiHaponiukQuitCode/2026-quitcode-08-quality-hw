@@ -83,6 +83,7 @@ Postgres (`pg_stat_user_functions`) не рахує виклики, що зак�
 ```js
 {
   id: "R1",
+  kind: "sql",
   ac: "AC-ROOM-06",
   file: "supabase/migrations/20261021000000_bookings.sql",
   tests: ["tests/db/bookings.test.ts"],
@@ -91,6 +92,8 @@ Postgres (`pg_stat_user_functions`) не рахує виклики, що зак�
   replace: "using (true)",
 }
 ```
+
+Без `kind: "sql"` `npm run mutation:sql` мутант мовчки пропускає.
 
 - `npm run mutation:sql` — спершу прогін без мутацій (тести мають бути зеленими на чистому коді). Скрипт
   відмовляється працювати з незакоміченими змінами у файлі мутанта. Він тимчасово змінює міграцію (одна буквальна

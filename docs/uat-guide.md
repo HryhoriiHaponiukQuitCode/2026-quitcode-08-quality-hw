@@ -156,7 +156,7 @@ report.mjs: docs/qa/uat/<YYYY-MM-DD>/report.md + manifest.json + frames/  ──
 
 | Комітимо в `docs/qa/uat/<YYYY-MM-DD>/` | Не комітимо |
 |---|---|
-| `report.md` — таблиця й розбір для PM, з місцем для рішення PM | відео — вкладенням в описі PR (`.webm`, 0,8–1,7 МБ на AC; якщо GitHub не приймає — `ffmpeg -i video.webm video.mp4`) |
+| `report.md` — таблиця й розбір для PM, з місцем для рішення PM | відео — вкладенням в описі PR (`.webm`; відео й trace разом — 0,8–1,7 МБ на AC у демо; якщо GitHub не приймає — `ffmpeg -i video.webm video.mp4`) |
 | `manifest.json` — машинний підсумок | trace, HTML-звіт, увесь `test-results/` |
 | `frames/<AC>-then-<N>.png` — кадри «Тоді» | `playwright/.auth/`, `accounts.txt` |
 
@@ -204,7 +204,8 @@ Vitest не чіпав територію Playwright. Потім рядки ва
   завантажити будь-хто;
 - звіт, кадри й `manifest.json` — `actions/upload-artifact`;
 - вердикт агента — локально на завантаженому артефакті або в CI: підписка — `CLAUDE_CODE_OAUTH_TOKEN` з
-  `claude setup-token`, без `--bare` (токен прив'язаний до вашої підписки); API — `ANTHROPIC_API_KEY` з `--bare`;
+  `claude setup-token` (токен прив'язаний до вашої підписки); API — достатньо `ANTHROPIC_API_KEY` у середовищі
+  (`review.mjs` змінювати не треба);
 - `SUPABASE_SECRET_KEY` не потрібен.
 
 Автозапуск після кожного деплою (Vercel `repository_dispatch`) — не вимагаємо: чи приходить ця подія у ваше репо,

@@ -77,7 +77,7 @@ PM здає репо вимог <pm>/<team-slug>-spec, розробник — с
 - UAT — специфікації (C): <!-- …/blob/<SHA>/tests/e2e/….spec.ts, … -->
 - UAT — звіт на проді (C): <!-- …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md -->
 - UAT — PR зі звітом і відео (C): <!-- …/pull/N (відео — вкладенням в описі) -->
-- UAT — негативний контроль (C): <!-- …/pull/N: рядок «до» і «після» -->
+- UAT — негативний контроль (C): <!-- …/pull/N: рядки звіту `npm run uat:nc` — NC-… → FAIL або NEEDS-HUMAN -->
 - Рядки `docs/conformance.md` (C): <!-- AC ID зі статусами після WS8: AC-…-NN (реалізовано), … -->
 - Eval рецензента — PR з вадами, не злитий (D): <!-- …/pull/N -->
 - Eval рецензента — таблиця й ключ (D): <!-- …/pull/N#issuecomment-M -->
