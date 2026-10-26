@@ -13,7 +13,27 @@
      1) Покладіть кожен файл рівно за шляхом з колонки «Файл тут» (шляхи відносно materials/).
      2) Змініть стан рядка на «✅» і зробіть ім'я файлу посиланням.
      3) npm-скрипти нижче — канонічні для docs/: якщо в демо інші імена, оновіть docs/*.md або цей розділ разом.
-     4) Перевірте на чистому клоні шаблону: quality.yml і smoke.yml проходять, typecheck і lint зелені. -->
+     4) Перевірте на чистому клоні шаблону: quality.yml і smoke.yml проходять, typecheck і lint зелені.
+     Контракт: docs/ уже обіцяють учасникам таку поведінку файлів. Якщо файл з демо інший — виправте файл або docs/:
+     - tests/e2e/support/uat.ts експортує thenStep(page, { clause, visible, hidden }, fn): кадр «Тоді» з прихованими
+       оверлеями й курсором, aria-знімок, кадр знімається і тоді, коли твердження впало (walkthrough-dev §5.2 імпортує
+       саме так); uat/example.spec.ts — у тому самому форматі (test.step для Дано/Коли, tag @uat, annotation ac);
+     - playwright.config.ts: проєкт setup має video: "off" і trace: "off" (uat-guide «Приватність записів»); retries 0,
+       workers 1; базова адреса — UAT_BASE_URL; .env.local конфіг завантажує сам (Playwright цього не робить);
+       HTML-звіт — у uat-results/html; результати — у uat-results/;
+     - auth.setup.ts перелічує змінні з обліковими даними в коментарі на початку файлу; сесії — у playwright/.auth/;
+     - npm run uat:review = build-review-pack → review → combine, результат у docs/qa/uat/<YYYY-MM-DD>/ (uat-report.md,
+       manifest.json, кадри); модель за замовчуванням — Haiku 5.5; промпт і схема — без змін зі спайку;
+     - health-route.ts: відповідь { ok, sha, env, db, reason }, 200 / 503, cache-control: no-store; код 540 від
+       Supabase → reason "paused"; невірний ключ → reason "invalid-api-key";
+     - smoke.yml: тригери status (Vercel success на main), schedule, workflow_dispatch; змінна репо PROD_URL; без секретів;
+     - vitest.coverage.config.mts і vitest.stryker.config.mts імпортують "./vitest.config.mjs" (не .mts: TS5097);
+     - mutation-check.mjs: заміна через функцію (text.replace(find, () => replace), щоб $$ уціліли); SQL, що не
+       завантажився, — окремий статус помилки, а не KILLED; відмова працювати з незакоміченими змінами; CRLF → LF;
+     - fallowrc.jsonc: без "entry"; @tailwindcss/turbopack в ignoreDependencies; fallow 3.35.0;
+     - quality.yml: jobs з назвами, з яких зрозуміло, що робити обов'язковим (усе, крім дорадчого npm audit);
+       fallow audit з версією з devDependencies і запасним значенням; npm audit ніколи не валить прогін;
+     - test-titles.mjs: ac:coverage рахує AC ID і в tests/e2e/*.spec.ts. -->
 
 ## D0: health і smoke
 
