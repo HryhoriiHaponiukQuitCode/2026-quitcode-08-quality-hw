@@ -99,12 +99,13 @@ export function parseTestTitles(file) {
   return titles;
 }
 
-// Рахуємо лише файли, які запускає CI:
+// Рахуємо лише файли, які справді запускає раннер тестів:
 //   Vitest (`npm test`, job app; include/exclude у vitest.config.mts): src/**/*.test.{ts,tsx} і tests/**/*.test.{ts,tsx},
 //     КРІМ tests/e2e/** (Vitest їх не запускає);
-//   Playwright (`npm run test:e2e`, job e2e у .github/workflows/e2e.yml; testMatch у playwright.config.ts):
-//     лише tests/e2e/**/*.spec.ts.
-// Тест у tests/e2e/*.test.ts, *.spec.ts поза tests/e2e, *.test.js, helpers.ts чи будь-якому іншому файлі CI не виконує,
+//   Playwright (testMatch у playwright.config.ts): лише tests/e2e/**/*.spec.ts. Їх запускає `npm run uat` проти
+//     вашого проду (WS8: звіт у docs/qa/uat/) і `npm run test:e2e` локально; якщо додано .github/workflows/e2e.yml
+//     (бонус WS8) — ще й job e2e у CI.
+// Тест у tests/e2e/*.test.ts, *.spec.ts поза tests/e2e, *.test.js, helpers.ts чи будь-якому іншому файлі жоден раннер не виконує,
 // тож AC він не покриває. Додаєте ще один раннер — розширюйте цей фільтр РАЗОМ із кроком CI.
 const E2E_DIR = /^tests\/e2e\//;
 export const isRunByVitest = (r) => !E2E_DIR.test(r) && /^(?:src|tests)\/(?:.+\/)?[^/]+\.test\.tsx?$/.test(r);
