@@ -61,7 +61,11 @@ git push -u origin HEAD
 Публічний маршрут, який каже дві речі: який коміт зараз на проді і чи відповідає база. Нічого секретного в ньому
 немає: SHA публічного репо, середовище Vercel, `ok` чи `down` і коротка причина.
 
-1. Скопіюйте маршрут і скрипт з [`materials/`](../materials/README.md#d0-health-і-smoke) (розділ «D0»).
+1. Скопіюйте з [`materials/d0/`](../materials/README.md#d0-health-і-smoke) маршрут `src/app/api/health/route.ts`,
+   його чисту функцію `src/lib/health.ts` і тест `tests/health.test.ts` (команди — у
+   [walkthrough, крок 1](walkthrough-dev.md#1-d0-152-год--умова-прийняття)). Маршрут робить один дешевий запит
+   публічним ключем до таблиці `profiles` шаблону. Відповідь «немає прав» (`42501`) теж означає, що база жива. Іншої
+   назви таблиці — змініть `from("profiles")`.
 2. **Додайте `/api/health` у `PUBLIC_PATHS`** у `src/lib/supabase/proxy.ts`. Інакше proxy відповість `307` на
    `/login`, і перевірка не побачить маршрут:
 
@@ -69,15 +73,15 @@ git push -u origin HEAD
    const PUBLIC_PATHS = ["/login", "/auth", "/api/health"];
    ```
 
-3. Локально: `npm run build`, `npm run start`, потім у другому терміналі
-   `curl.exe -s http://localhost:3000/api/health`.
+3. Локально: `npm run build` (у списку маршрутів — `ƒ /api/health`), `npm run start`, потім у другому терміналі
+   `curl.exe -s http://localhost:3000/api/health` → `{"ok":true,"sha":"local","env":"local","db":"ok",…}`.
 
 Що означає відповідь:
 
 | Відповідь | Що це | Що робити |
 |---|---|---|
 | `200 {"ok":true,"sha":"…","env":"production","db":"ok"}` | усе гаразд | — |
-| `"sha":"local"` на проді | Vercel не передає системні змінні | Vercel → Settings → Environment Variables → увімкнути автоматичний доступ до System Environment Variables (точну назву перевірте в інтерфейсі) → Redeploy |
+| `"sha":"local"` на проді | Vercel не передає системні змінні (типово передає: у демо preview показав справжній SHA) | Vercel → Settings → Environment Variables → «Automatically expose System Environment Variables» (так пише підказка `smoke.mjs`; точну назву перевірте в інтерфейсі) → Redeploy |
 | `503`, `"reason":"invalid-api-key"` | ключ `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` у Vercel не від цього проєкту чи ротований | звірте змінні Production у Vercel → Redeploy |
 | `503`, `"reason":"paused"` (Supabase відповів кодом 540) | Supabase Free заснув | Supabase Dashboard → **Resume project** |
 | `503`, інша причина | мережа, 5xx, PostgREST без бази | `NEXT_PUBLIC_SUPABASE_URL` у Vercel; стан проєкту в Dashboard |
@@ -91,17 +95,24 @@ Workflow `smoke` перевіряє прод **після** кожного ро�
 бази. Supabase каже, що API-запити рахуються як активність, але поріг не називає. Тож Dashboard перед заняттям і
 перед прийманням PM однаково відкривайте.
 
-1. Скопіюйте `.github/workflows/smoke.yml` і `scripts/smoke-prod.mjs` з [`materials/`](../materials/README.md#d0-health-і-smoke).
+1. Скопіюйте `.github/workflows/smoke.yml` і `scripts/smoke.mjs` з [`materials/d0/`](../materials/README.md#d0-health-і-smoke).
 2. **Змінна репо `PROD_URL`** (не секрет): Settings → Secrets and variables → Actions → Variables → New repository
-   variable → `PROD_URL` = `https://<проєкт>.vercel.app`.
+   variable → `PROD_URL` = `https://<проєкт>.vercel.app`. Або `gh variable set PROD_URL --body "https://<проєкт>.vercel.app"`.
+   Без неї прогін червоний з підказкою: адреси за замовчуванням немає, щоб smoke не перевіряв чужий прод.
 3. Запустіть уручну: Actions → smoke → Run workflow (або `gh workflow run smoke.yml`) і дочекайтеся зеленого прогону.
 
 Що варто знати:
 
 - **Тригери:**
-  - `status` — коли Vercel ставить зелений статус на коміт `main`;
+  - `status` — коли Vercel ставить зелений статус на коміт `main` (Vercel ставить цей статус у репо курсу);
+  - `repository_dispatch` (`vercel.deployment.success`, лише production) — Vercel документує цю подію, але чи
+    приходить вона саме у ваше репо, ми не перевіряли; головний тригер — `status`;
   - `schedule` — щодня;
   - `workflow_dispatch` — уручну.
+- `status`, `repository_dispatch` і `schedule` GitHub запускає лише з файлу на гілці за замовчуванням. До злиття
+  `smoke.yml` перевіряється тільки локально: `npm run smoke -- <прод-URL>`.
+- Очікуваний SHA — щойно розгорнутий коміт; прод-домен перемикається не миттєво, тож скрипт пробує `/api/health` до
+  6 разів по 20 с.
 - `smoke` — **не** обов'язкова перевірка ruleset-у: він перевіряє прод після злиття, а не PR.
 - Кожен статус на кожному коміті (Vercel pending, CodeRabbit) створює в Actions **пропущений** (skipped) прогін
   `smoke`. Це шум, а не збій.
@@ -114,7 +125,7 @@ Workflow `smoke` перевіряє прод **після** кожного ро�
 ```powershell
 git fetch origin
 $sha = git rev-parse origin/main
-node scripts/smoke-prod.mjs https://<проєкт>.vercel.app $sha   # 0 — гаразд; 1 — рядки ::error:: пояснюють, що не так
+npm run smoke -- https://<проєкт>.vercel.app $sha             # 0 — гаразд; 1 — рядки ::error:: пояснюють, що не так
 npm ls next                                                   # next@16.4.3
 gh run list --workflow smoke.yml --branch main --limit 3      # останній — success
 gh run list --workflow ci.yml --branch main --limit 3         # потім: gh run view <id> — крок «Apply migrations» у db-deploy
@@ -203,7 +214,7 @@ git log --all --oneline -- accounts.txt   # порожньо
 
 ```powershell
 $B = "https://raw.githubusercontent.com/koldovsky/2026-quitcode-08-quality-hw/main/materials"
-curl.exe -sLo scripts/zip-accounts.mjs "$B/accounts/zip-accounts.mjs"
+curl.exe -fsSL --create-dirs -o scripts/zip-accounts.mjs "$B/accounts/zip-accounts.mjs"
 npm i -D --save-exact @zip.js/zip.js@2.24.0
 npm pkg set scripts.accounts:zip="node scripts/zip-accounts.mjs"
 npm run accounts:zip                 # створити й перевірити

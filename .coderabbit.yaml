@@ -97,7 +97,7 @@ reviews:
         PR-поля — …/pull/N у «Ваше репо»; прогони — …/actions/runs/N; «Обов'язкові перевірки в solo-main» —
         назви jobs; «Якість тестів — убитий мутант» — файл:рядок, AC ID і посилання …/blob/<SHA>/…#L<N> на тест;
         «SQL-мутація» — …/pull/N або «немає PGlite-гарнесу»; «UAT — специфікації» — щонайменше одне посилання
-        …/blob/<SHA>/tests/e2e/….spec.ts; «UAT — звіт на проді» — …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md;
+        …/blob/<SHA>/tests/e2e/….spec.ts; «UAT — звіт на проді» — …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md;
         «Рядки docs/conformance.md» — AC ID зі статусами; «Eval рецензента» — PR …/pull/N, таблиця й правило —
         …/pull/N#issuecomment-M чи …/commit/<sha>; «Відхилення від PM» — …/issues/N з відповідями або
         «не надходило». Бонус — «—» або опис із посиланням.
@@ -215,7 +215,7 @@ reviews:
           with their kind; "QA proof pack" is a /blob/<SHA>/docs/qa/proof-pack.md link; gates, test-quality,
           UAT and reviewer-eval fields are /pull/N, /actions/runs/N, /blob/<SHA>/... or #issuecomment-M links
           in "Ваше репо" as the template asks; "UAT — звіт на проді" points to
-          /blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md; "SQL-мутація" is a /pull/N link or
+          /blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md; "SQL-мутація" is a /pull/N link or
           "немає PGlite-гарнесу"; "Відхилення від PM" lists /issues/N links or "не надходило".
           Бонус is "—" or a description with a link.
           Placeholders such as <…>, "…" or untouched template comments instead of values are a FAIL.

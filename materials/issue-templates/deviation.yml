@@ -84,7 +84,7 @@ body:
     id: uat
     attributes:
       label: Рядок UAT-звіту
-      description: Необов'язково. Посилання на `uat-report.md` розробника чи на кадр «Тоді», де видно відхилення.
-      placeholder: "https://github.com/<dev>/<team-slug>/blob/<sha>/docs/qa/uat/2026-11-01/uat-report.md"
+      description: Необов'язково. Посилання на звіт UAT розробника (`docs/qa/uat/<дата>/report.md`) чи на кадр «Тоді», де видно відхилення.
+      placeholder: "https://github.com/<dev>/<team-slug>/blob/<sha>/docs/qa/uat/2026-11-01/report.md"
     validations:
       required: false

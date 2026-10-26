@@ -54,20 +54,20 @@
 | <!-- src/lib/…/x.ts:14 `<=` → `<` --> | AC-…-NN | вижив | <!-- …/blob/<sha>/tests/…#L<N>: межа «…» з AC --> | убитий |
 
 - Stryker: <!-- score до → після, посилання на PR з виводом -->
-- SQL-мутації (`npm run mutation:sql`): <!-- таблиця KILLED/SURVIVED з PR або «немає PGlite-гарнесу» -->
+- SQL-мутації (`npm run mutation:sql`): <!-- таблиця з npm run mutation:sql -- --markdown (KILLED / SURVIVED / ERROR) з PR або «немає PGlite-гарнесу» -->
 - Еквівалентні мутанти: <!-- який і чому (рядок міграції чи коду, що робить його еквівалентним) або «немає» -->
 
 ## C. UAT на проді
 
 | AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
 |---|---|---|---|---|---|
-| AC-…-NN | <!-- …/blob/<sha>/tests/e2e/….spec.ts --> | <!-- passed / failed --> | <!-- PASS / FAIL / NEEDS-HUMAN --> | <!-- PASS / FAIL / NEEDS-HUMAN --> | <!-- …/blob/<sha>/docs/qa/uat/<дата>/…png --> |
+| AC-…-NN | <!-- …/blob/<sha>/tests/e2e/….spec.ts --> | <!-- passed / failed --> | <!-- Haiku: PASS / FAIL / NEEDS-HUMAN (+ Sonnet, якщо була суперечка) --> | <!-- PASS / FAIL / NEEDS-HUMAN і правило (R1–R6) --> | <!-- …/blob/<sha>/docs/qa/uat/<дата>/frames/AC-…-then-1.png --> |
 
-- Звіт: <!-- …/blob/<sha>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md -->
+- Звіт: <!-- …/blob/<sha>/docs/qa/uat/<YYYY-MM-DD>/report.md -->
 - Відео: <!-- вкладення в описі PR …/pull/N -->
-- Рецензент: <!-- модель, напр. claude-haiku-5-5; вартість прогону зі звіту -->
-- Негативний контроль: <!-- що зламано, вердикт до → після, …/pull/N -->
-- Дані: <!-- «лише читання» або «@writes: uat-<запуск>@example.test, прибирання — npm run …» -->
+- Рецензент: <!-- моделі зі звіту (claude-haiku-5-5; суперечки — claude-sonnet-5-5) і вартість прогону -->
+- Негативний контроль: <!-- NC-… (npm run uat:nc): що навмисно хибне, вердикт (FAIL / NEEDS-HUMAN), …/pull/N -->
+- Дані: <!-- «лише читання» або «@writes: uat-<запуск>@example.test, рядок «Прибирання» зі звіту» -->
 
 ### Приймання PM
 

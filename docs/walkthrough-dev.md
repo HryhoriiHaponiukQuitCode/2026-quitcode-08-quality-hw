@@ -25,6 +25,13 @@
 (команди по черзі), `Copy-Item` замість `cp`, змінна середовища — `$env:ІМ'Я = "…"`. У Git Bash і на macOS — звичні
 відповідники.
 
+**Матеріали** завантажуємо з цього репо циклом `curl.exe -fsSL --create-dirs`. Адреса — у змінній `$B`; у кожному
+новому терміналі задайте її ще раз:
+
+```powershell
+$B = "https://raw.githubusercontent.com/koldovsky/2026-quitcode-08-quality-hw/main/materials"
+```
+
 **Бюджет треку: 12–15 годин** (кроки 0–9, без бонусу).
 
 | Крок | Коли | Бюджет | Трек |
@@ -79,15 +86,19 @@ CodeRabbit «Тип PR і межі змін».
    git pull
    git switch -c chore/d0-health-smoke
    $B = "https://raw.githubusercontent.com/koldovsky/2026-quitcode-08-quality-hw/main/materials"
-   New-Item -ItemType Directory -Force src/app/api/health, .github/workflows | Out-Null
-   curl.exe -sLo src/app/api/health/route.ts "$B/deploy/health-route.ts"    # TODO(sync-from-demo)
-   curl.exe -sLo scripts/smoke-prod.mjs "$B/deploy/smoke-prod.mjs"          # TODO(sync-from-demo)
-   curl.exe -sLo .github/workflows/smoke.yml "$B/deploy/smoke.yml"          # TODO(sync-from-demo)
-   npm pkg set scripts.smoke="node scripts/smoke-prod.mjs"
+   foreach ($f in "src/app/api/health/route.ts", "src/lib/health.ts", "tests/health.test.ts",
+                  "scripts/smoke.mjs", ".github/workflows/smoke.yml") {
+     curl.exe -fsSL --create-dirs -o $f "$B/d0/$f"
+   }
+   npm pkg set scripts.smoke="node scripts/smoke.mjs"
    ```
 
-   Додайте `"/api/health"` у `PUBLIC_PATHS` (`src/lib/supabase/proxy.ts`). Потім `npm run lint`,
-   `npm run typecheck`, `npm test`, `npm run build` → PR → злиття.
+   - `-f` — curl повідомить про помилку замість тихого файлу «404: Not Found»; `--create-dirs` створює теки.
+   - Додайте `"/api/health"` у `PUBLIC_PATHS` (`src/lib/supabase/proxy.ts`).
+   - Маршрут перевіряє базу запитом до таблиці `profiles` шаблону. Іншої назви таблиці — змініть рядок
+     `from("profiles")` у `route.ts`.
+   - Потім `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` (у списку маршрутів — `ƒ /api/health`) →
+     PR → злиття.
 3. **Змінна `PROD_URL`** і перший прогін:
 
    ```powershell
@@ -101,7 +112,9 @@ CodeRabbit «Тип PR і межі змін».
 5. **Тестові акаунти й `accounts.zip`** — розділ [«Тестові акаунти»](deploy-d0.md#тестові-акаунти-accountszip): по
    акаунту на кожну роль зрізів 1–2 на проді, `accounts.txt` у `.gitignore`, `accounts.zip` (AES-256, пароль курсу)
    окремим PR.
-6. **Перевірте самі:** `npm run smoke -- https://<проєкт>.vercel.app <SHA main>` → код 0.
+6. **Перевірте самі:** `npm run smoke -- https://<проєкт>.vercel.app <SHA main>` → код 0 і рядок «OK — прод живий,
+   сторінка входу відкривається, база відповідає». До злиття маршруту прод дає код 1 з підказкою
+   `"/api/health": 307 → /login — додайте "/api/health" у PUBLIC_PATHS` — так само було в демо.
 7. У чат команди: «D0 готово: прод <URL>, `/api/health` ok. Акаунти: <ролі>; `accounts.zip` у корені репо, пароль — з
    чату курсу».
 
@@ -118,8 +131,7 @@ CodeRabbit «Тип PR і межі змін».
 - AC, що змінює дані, — лише якщо UAT прибиратиме за собою ([UAT-гайд](uat-guide.md#дані-uat-на-проді--це-прод)).
 
 ```powershell
-New-Item -ItemType Directory -Force docs/qa | Out-Null
-curl.exe -sLo docs/qa/proof-pack.md "$B/templates/proof-pack.template.md"
+curl.exe -fsSL --create-dirs -o docs/qa/proof-pack.md "$B/templates/proof-pack.template.md"
 ```
 
 Заповніть таблицю «3 AC» дослівним «Тоді» з `requirements/` (не переказом). Файл комітите разом із PR кроку 3.
@@ -130,16 +142,32 @@ curl.exe -sLo docs/qa/proof-pack.md "$B/templates/proof-pack.template.md"
 
 Гайд з поясненнями — [`gates-guide.md`](gates-guide.md).
 
-### 3.1 Перший повний прогін і розбір
+### 3.1 Матеріали й перший повний прогін
 
 ```powershell
 git switch main
 git pull
 git switch -c task/quality-gates
-npm i -D --save-exact fallow@3.35.0 @vitest/eslint-plugin@1.6.27 @vitest/coverage-v8@5.0.3
+npm i -D --save-exact fallow@3.35.0 @vitest/eslint-plugin@1.6.27 @vitest/coverage-v8@5.0.3 eslint-plugin-playwright@2.12.1
+foreach ($f in ".fallowrc.jsonc", ".github/workflows/quality.yml", "eslint.config.mjs",
+               "vitest.coverage.config.mts", "scripts/coverage-summary.mjs") {
+  curl.exe -fsSL --create-dirs -o $f "$B/gates/$f"
+}
+npm pkg set scripts.gates="npm run lint && npm run typecheck && fallow audit --base origin/main"
+npm pkg set scripts.test:coverage="vitest run --config vitest.coverage.config.mts --coverage"
+npm pkg set scripts.coverage:summary="node scripts/coverage-summary.mjs"
 npm ci
-npx fallow > fallow-baseline.txt   # повний прогін: усе, що вже є в репо; файл не комітимо
+npx fallow --no-cache > fallow-baseline.txt   # повний прогін: усе, що вже є в репо; файл не комітимо
 ```
+
+- **`eslint.config.mjs` замінюється цілком**, якщо ваш не відрізняється від шаблону. Змінювали — перенесіть із
+  матеріалів три блоки «WS8» і рядки `globalIgnores` ([materials/README](../materials/README.md#a-ворота)).
+- **Покриття** (`vitest.coverage.config.mts`) ставимо вже тут: job «Покриття» в `quality.yml` запускає
+  `npm run test:coverage`.
+- Допишіть у `.gitignore` блок з [materials/README](../materials/README.md#gitignore) (там і `accounts.txt`, і теки
+  Stryker та Playwright на наступні кроки).
+- На чистому шаблоні з матеріалами повний прогін дає дві знахідки, як і в демо: невикористаний файл
+  `src/lib/supabase/client.ts` і невикористаний експорт `AC_ID_GLOBAL` у `scripts/lib/spec-lib.mjs`. Решта — ваша.
 
 Промпт агенту:
 
@@ -154,30 +182,33 @@ Tailwind 4 через @tailwindcss/turbopack, shadcn/ui). Нічого не зм
 Перевірте таблицю самі: агент охоче оголошує «хибною» незручну знахідку. Мертва Server Action — справжня знахідка,
 навіть якщо її ніхто не викликає: це публічний POST-ендпойнт.
 
-### 3.2 Конфіг, workflow, правила лінтера
-
-```powershell
-curl.exe -sLo .fallowrc.jsonc "$B/gates/fallowrc.jsonc"                   # TODO(sync-from-demo)
-curl.exe -sLo .github/workflows/quality.yml "$B/gates/quality.yml"        # TODO(sync-from-demo)
-curl.exe -sLo eslint-vitest-block.mjs "$B/gates/eslint-vitest-block.mjs"  # TODO(sync-from-demo): блок вставляєте вручну, файл не комітите
-npm pkg set scripts.gates="fallow audit"
-```
+### 3.2 Конфіг, правила лінтера, покриття
 
 - **`.fallowrc.jsonc`** — додайте свої `ignore…` з таблиці, кожен з коментарем-причиною.
-- **Тестові правила лінтера:**
-  - Вставте блок у `eslint.config.mjs` і запустіть `npm run lint`.
-  - Якщо знахідок немає — правила лишаються в `eslint.config.mjs` як `error`.
-  - Якщо є — виправте їх (вимкнений тест, умовний `expect`, порожній тест). Або на час виправлення перенесіть блок в
-    окремий крок `quality.yml`.
-  - Рівень `warn` в `eslint.config.mjs` не годиться: `npm run lint` має `--max-warnings 0`.
+- **Тестові правила лінтера** вже в `eslint.config.mjs` як `error` (в обов'язковому `app`). Запустіть
+  `npm run lint`:
+  - на чистому шаблоні знахідок 0;
+  - ваші знахідки (вимкнений тест, умовний `expect`, `toThrow()` без тексту, AC ID посеред назви, `vi.mock` власного
+    модуля) виправте в цьому PR або поясніть у таблиці розбору;
+  - рівень `warn` не годиться: `npm run lint` має `--max-warnings 0`, тож `warn` теж червоний `app`;
+  - правило вимикати (`off`) лише з причиною в таблиці; для запеклих випадків — перенести знахідку в окремий PR
+    виправлення, а не вимкнути.
+- **Підлога покриття:** `npm run test:coverage` → `coverage/index.html`. У `FLOORED` (`vitest.coverage.config.mts`)
+  впишіть доменні файли, які вже тримають 90/85/90/90, і лише їх. Порожній список — теж чесний старт.
 - Перевірки:
 
   ```powershell
   npm run lint
   npm run typecheck
   npm test
+  npm run test:coverage
+  npm run coverage:summary
   npm run gates
   ```
+
+  `npm run gates` друкує `Audit scope: N changed files vs origin/main` і завершується кодом 0. База `origin/main`
+  у скрипті потрібна: без неї після `git push -u` аудит порівнює гілку саму з собою (`0 changed files`) і завжди
+  «зелений» — так було в демо.
 
 - **За бажанням — правило в `AGENTS.md`:** «Перед PR — `npm run gates`. Не вимикай і не послаблюй тести, не додавай
   у код застосунку перевірок `NODE_ENV === "test"`, не додавай `eslint-disable` чи `@ts-ignore` без пояснення в PR».
@@ -188,10 +219,11 @@ npm pkg set scripts.gates="fallow audit"
    CI і `quality`, злиття.
 2. Дочекайтеся **зеленого `quality` на `main`** (Actions).
 3. Лише тепер — у ruleset: Settings → Rules → Rulesets → `solo-main` → Require status checks to pass → Add checks →
-   jobs workflow `quality` (вони з'являються в списку після першого прогону; точні назви кнопок перевірте в
-   інтерфейсі) → Save. До зеленого прогону на `main` не додавайте: інакше жоден PR не зіллється.
-4. `npm audit` у `quality` — **дорадчий** і в обов'язкові не йде: нова вразливість у залежності може з'явитись без
-   жодної зміни коду.
+   **«Ворота: fallow audit»** і **«Покриття: доменна підлога»** (вони з'являються в списку після першого прогону;
+   точні назви кнопок перевірте в інтерфейсі) → Save. До зеленого прогону на `main` не додавайте: інакше жоден PR не
+   зіллється.
+4. **«Порада: вразливі залежності»** (`npm audit`) — дорадчий і в обов'язкові не йде ніколи: нова вразливість у
+   залежності може з'явитись без жодної зміни коду. Job і так не червоніє, лише пише попередження.
 
 **Доказ:** PR з розбором; зелений `quality` на `main`; назви jobs у `solo-main`.
 
@@ -214,30 +246,37 @@ SQL, — так і напиши. Нічого не змінюй.
 
 ### 4.2 Покриття
 
+Конфіг покриття вже є з кроку 3.
+
 ```powershell
-curl.exe -sLo vitest.coverage.config.mts "$B/testing/vitest.coverage.config.mts"   # TODO(sync-from-demo)
-curl.exe -sLo scripts/coverage-summary.mjs "$B/testing/coverage-summary.mjs"       # TODO(sync-from-demo)
-npm pkg set scripts.test:coverage="vitest run --config vitest.coverage.config.mts --coverage"
 npm run test:coverage
+npm run coverage:summary
 Start-Process coverage/index.html
 ```
 
-- Пороги на файл — лише для доменних модулів (`src/lib/…`). Під свої модулі змініть glob у конфігу.
-- У сесії агента Vitest ховає з термінальної таблиці файли зі 100 %. Цифри беріть з `coverage/index.html` чи
-  `coverage/coverage-summary.json`.
+- У сесії агента Vitest ховає з термінальної таблиці файли зі 100 %. Цифри беріть з `coverage/index.html`,
+  `coverage/coverage-summary.json` чи `npm run coverage:summary`.
 - У proof pack — цифри файлів, на яких стоять ваші 3 AC. Для файлів із 0 % (сторінки, дії) — чим вони доведені
   натомість.
+- Не дивуйтеся, якщо покриття не зросте: у демо 5 нових тестів бази й межові тести вбили мутантів, а покриття рядків
+  лишилось 32,01 % (146 з 456) і до, і після.
 
 ### 4.3 Мутації TS: Stryker
 
 ```powershell
 npm i -D --save-exact @stryker-mutator/core@10.1.1 @stryker-mutator/vitest-runner@10.1.1
-curl.exe -sLo stryker.config.json "$B/testing/stryker.config.json"                  # TODO(sync-from-demo)
-curl.exe -sLo vitest.stryker.config.mts "$B/testing/vitest.stryker.config.mts"      # TODO(sync-from-demo)
+foreach ($f in "stryker.config.json", "vitest.stryker.config.mts") {
+  curl.exe -fsSL --create-dirs -o $f "$B/testing/$f"
+}
 npm pkg set scripts.mutation:ts="stryker run"
 npm run mutation:ts -- --mutate src/lib/<модуль за вашими AC>.ts
 Start-Process reports/mutation/mutation.html
 ```
+
+- `stryker.config.json` мутує `src/lib/**`, крім `src/lib/supabase/**`. Інша структура домену — змініть `mutate`.
+- `npm ci` після цього кроку друкує «2 moderate severity vulnerabilities» — це dev-залежність Stryker; `npm audit
+  --omit=dev` чистий.
+- `--logLevel debug` не додавайте: з Vitest 5 Stryker 10.1.1 з ним падає.
 
 1. Знайдіть **вижилих мутантів на рядках ваших AC**. Розберіть кожного: прогалина AC (тест не перевіряє межу з AC) /
    нерозрізнений вхід / дослівний текст (доводить e2e) / еквівалентний (поведінка не змінилась).
@@ -257,26 +296,40 @@ Start-Process reports/mutation/mutation.html
    який ваш тест убиває.
 5. Після невдалого прогону видаліть `.stryker-tmp/`.
 
-### 4.4 Мутації SQL (якщо є PGlite-гарнес)
+### 4.4 Мутації SQL
 
-Якщо правило вашого відмовного AC живе в базі (політика, GRANT, функція), найсильніший доказ — SQL-мутант:
+Якщо правило вашого відмовного AC живе в базі (політика, GRANT, функція), найсильніший доказ — SQL-мутант.
 
 ```powershell
-curl.exe -sLo scripts/mutation-check.mjs "$B/testing/mutation-check.mjs"   # TODO(sync-from-demo)
-curl.exe -sLo scripts/mutants.mjs "$B/testing/mutants.example.mjs"         # TODO(sync-from-demo): приклади замініть своїми
-npm pkg set scripts.mutation:sql="node scripts/mutation-check.mjs"
-npm run mutation:sql
+foreach ($f in "scripts/mutation-check.mjs", "scripts/mutants.mjs") {
+  curl.exe -fsSL --create-dirs -o $f "$B/testing/$f"
+}
+npm pkg set scripts.mutation:sql="node scripts/mutation-check.mjs --kind sql"
 ```
 
-- Мутант — запис у `scripts/mutants.mjs`: `ac`, файл міграції, які тести запускати, `find` (рядок, що зустрічається
-  рівно раз) і `replace` (послаблена умова, наприклад `using (true)`).
-- Скрипт відмовляється працювати з незакоміченими змінами, тимчасово змінює файл і **завжди** повертає його. Мутовану
-  міграцію не комітьте ніколи.
-- `KILLED` — тест упав, `SURVIVED` — усе зелене: тест не охороняє правило. Еквівалентний мутант — лише з причиною
-  (рядок міграції, який робить його еквівалентним).
-- Гарнесу немає? Його можна додати з `materials/` (`tests/db/supabase-pglite.ts` +
-  `npm i -D --save-exact @electric-sql/pglite@0.5.8`). Або запишіть у proof pack «SQL-правило мутацією не доведено:
-  немає PGlite».
+**PGlite-гарнесу немає?** Додайте його з матеріалів разом із тестом-перевіркою на `profiles` шаблону:
+
+```powershell
+npm i -D --save-exact @electric-sql/pglite@0.5.8
+foreach ($f in "tests/db/supabase-pglite.ts", "tests/db/profiles-db.test.ts") {
+  curl.exe -fsSL --create-dirs -o $f "$B/testing/$f"
+}
+npm test
+npm run mutation:sql     # на чистому шаблоні: P1 KILLED, P2 KILLED — «2 з 2 вбито», ≈5 с
+```
+
+Гарнес у вас уже є — лишайте свій, а P1/P2 і `profiles-db.test.ts` не беріть (або перепишіть на свою функцію).
+
+- **Ваш мутант** — запис у `scripts/mutants.mjs`: `id`, `kind: "sql"`, `ac`, `what`, файл міграції, які тести
+  запускати, `find` (рядок, що зустрічається у файлі рівно раз) і `replace` (послаблена умова, наприклад
+  `using (true)`). Формат і приклади з демо — у коментарях файлу.
+- Скрипт спершу проганяє тести без мутацій, відмовляється працювати з незакоміченими змінами у файлі мутанта,
+  тимчасово змінює файл і **завжди** повертає його. Мутовану міграцію не комітьте ніколи.
+- `KILLED` — тест упав; `SURVIVED` — усе зелене: тест не охороняє правило; `ERROR` — тест-файл не завантажився
+  (наприклад, мутант зламав SQL): це не «вбитий», виправте `find`/`replace`. Еквівалентний мутант — лише
+  `expect: "survive"` з `reason` (рядок міграції, який робить його еквівалентним).
+- `npm run mutation:sql -- --only <ID> --markdown` — таблиця для опису PR.
+- Без гарнесу — рядок у proof pack «SQL-правило мутацією не доведено: немає PGlite».
 
 **Доказ:** PR `task/test-quality` з таблицями B у proof pack; Stryker «до/після»; вивід `mutation:sql` або причина,
 чому його немає.
@@ -289,115 +342,179 @@ npm run mutation:sql
 
 ```powershell
 npm i -D --save-exact @playwright/test@1.64.1
-npx playwright install chromium --only-shell
-New-Item -ItemType Directory -Force tests/e2e/support, scripts/uat | Out-Null
-curl.exe -sLo playwright.config.ts "$B/uat/playwright.config.ts"            # TODO(sync-from-demo)
-curl.exe -sLo tests/e2e/auth.setup.ts "$B/uat/auth.setup.ts"                # TODO(sync-from-demo)
-curl.exe -sLo tests/e2e/support/uat.ts "$B/uat/uat.ts"                      # TODO(sync-from-demo)
-curl.exe -sLo scripts/lib/test-titles.mjs "$B/uat/test-titles.mjs"          # TODO(sync-from-demo)
-foreach ($f in "build-review-pack.mjs","review.mjs","combine.mjs","review-prompt.uk.md","verdict.schema.json") {
-  curl.exe -sLo "scripts/uat/$f" "$B/uat/scripts/$f"                        # TODO(sync-from-demo)
+npx playwright install chromium
+foreach ($f in "playwright.config.ts", "vitest.config.mts",
+               "tests/e2e/auth.setup.ts", "tests/e2e/cleanup.teardown.ts",
+               "tests/e2e/support/uat.ts", "tests/e2e/support/admin.ts",
+               "scripts/uat/run.mjs", "scripts/uat/pack.mjs", "scripts/uat/review.mjs", "scripts/uat/combine.mjs",
+               "scripts/uat/report.mjs", "scripts/uat/lib.mjs", "scripts/uat/review-prompt.uk.md",
+               "scripts/uat/verdict.schema.json",
+               "scripts/lib/test-titles.mjs", "scripts/check-ac-coverage.mjs",
+               "tests/scripts/check-ac-coverage.test.ts",
+               "tests/fixtures/ac-coverage/e2e-counted/docs/conformance.md",
+               "tests/fixtures/ac-coverage/e2e-counted/openspec/specs/leave/spec.md",
+               "tests/fixtures/ac-coverage/e2e-counted/tests/e2e/leave.spec.ts",
+               "tests/fixtures/ac-coverage/e2e-not-run/docs/conformance.md",
+               "tests/fixtures/ac-coverage/e2e-not-run/openspec/specs/leave/spec.md",
+               "tests/fixtures/ac-coverage/e2e-not-run/tests/e2e/helper.ts",
+               "tests/fixtures/ac-coverage/e2e-not-run/tests/e2e/leave.test.ts") {
+  curl.exe -fsSL --create-dirs -o $f "$B/uat/$f"
 }
-npm pkg set scripts.uat="playwright test"
-npm pkg set scripts.uat:review="node scripts/uat/review.mjs"
+npm pkg set scripts.test:e2e="playwright test"
+npm pkg set scripts.uat="node scripts/uat/run.mjs"
+npm pkg set scripts.uat:nc="node scripts/uat/run.mjs --negative-controls"
+npm pkg set scripts.uat:review="node scripts/uat/review.mjs && node scripts/uat/report.mjs"
 ```
 
-- Допишіть у `.gitignore` теки з [materials/README](../materials/README.md#gitignore-і-eslint) (`uat-results/`,
-  `playwright/.auth/`, `playwright-report/`, `test-results/`) і ті самі — у `globalIgnores` ESLint.
-- Облікові дані ролей для входу — у `.env.local` (змінні, які читає `tests/e2e/auth.setup.ts`; перелік — у коментарі
-  на початку файлу). Ніколи не в специфікації.
-- `npm run lint`, `npm run typecheck`, `npm test` — зелені (Vitest не бере `*.spec.ts`).
+- **Файли шаблону з правками WS8** — `vitest.config.mts` (`tests/e2e/**` в `exclude`), `scripts/lib/test-titles.mjs`,
+  `scripts/check-ac-coverage.mjs` і `tests/scripts/check-ac-coverage.test.ts`. Якщо ви свої не змінювали — заміна
+  цілком безпечна. Змінювали — перенесіть правки (подивіться `git diff` після завантаження).
+- **`tests/e2e/auth.setup.ts`:** у `ROLES` — ваші ролі й адреси акаунтів на проді (D0.5). Пароль береться з
+  `DEMO_USER_PASSWORD` у `.env.local` (або `UAT_PASSWORD_<РОЛЬ>`, якщо в ролі окремий пароль). Ніколи не в
+  специфікації. Інша форма входу чи сторінка після входу — змініть `signIn` у `tests/e2e/support/uat.ts`.
+- **`tests/e2e/support/admin.ts`:** `OWNED_ROWS` заповнюйте, лише якщо AC пише в базу (див. 5.2).
+- `.gitignore` уже має теки Playwright з кроку 3.
+- `npm run lint`, `npm run typecheck`, `npm test`, `npm run ac:coverage` — зелені (Vitest не бере `*.spec.ts`).
+  `npx playwright test --list` показує проєкт `setup` з вашими ролями.
 
 ### 5.2 Специфікація на кожен AC
 
-Один AC — один `test` у `tests/e2e/<область>.spec.ts`. Зразок формату — `materials/uat/example.spec.ts`
-(`TODO(sync-from-demo)`); скелет:
+Один AC — один `test` у `tests/e2e/<область>.spec.ts`. Зразки формату з демо (не копіюйте як є):
+[`users-forbidden.spec.ts`](../materials/uat/examples/users-forbidden.spec.ts) — відмова, лише читання;
+[`users-copy-link.spec.ts`](../materials/uat/examples/users-copy-link.spec.ts) — `@writes` з прибиранням, буфер обміну,
+замазане посилання. Скелет:
 
 ```ts
-import { test, expect } from "@playwright/test";
-import { thenStep } from "./support/uat";
+import { expect, test } from "@playwright/test";
+import { attachRuntimeErrors, given, thenStep, when } from "./support/uat";
+
+test.afterEach(async ({ page }) => attachRuntimeErrors(page));
 
 test(
   "AC-ROOM-08: відвідувач без входу не бачить розкладу",
-  { tag: "@uat", annotation: { type: "ac", description: "AC-ROOM-08" } },
+  { tag: ["@uat"], annotation: { type: "ac", description: "AC-ROOM-08" } },
   async ({ page }) => {
-    await test.step("Дано відвідувач не увійшов", async () => {});
-    await test.step("Коли відвідувач відкриває пряме посилання на розклад кімнати «Мала»", async () => {
+    await given("відвідувач не увійшов", async () => {});
+    await when("відвідувач відкриває пряме посилання на розклад кімнати «Мала»", async () => {
       await page.goto("/rooms/mala");
     });
-    await thenStep(page, {
-      clause: "бачить сторінку входу, а розкладу не показано",
-      visible: ["сторінка входу"],
-      hidden: ["розкладу немає в розмітці сторінки"],
-    }, async () => {
-      await expect(page).toHaveURL(/\/login/);
-      await expect(page.getByRole("heading", { name: "Вхід" })).toBeVisible();
-      await expect(page.getByText("Розклад кімнати")).toHaveCount(0);
-    });
+    await thenStep(
+      page,
+      {
+        clause: "бачить сторінку входу, а розкладу не показано",
+        visible: ["сторінка входу (заголовок «Вхід»)"],
+        hidden: ["розкладу немає в розмітці сторінки"],
+      },
+      async () => {
+        await expect(page).toHaveURL(/\/login/);
+        await expect(page.getByRole("heading", { name: "Вхід" })).toBeVisible();
+        await expect(page.getByText("Розклад кімнати")).toHaveCount(0);
+      },
+    );
   },
 );
 ```
+
+- `given` і `when` — це `test.step` з назвою «Дано: …» / «Коли: …». Рецензент бачить саме ці кроки
+  (`journey.md`), тож голий `test.step("Дано …")` без двокрапки до нього не дійде.
+- Роль з входом — `test.use({ storageState: "playwright/.auth/<роль>.json" })` на початку файлу.
+- `visible` — лише те, що видно на кадрі. Точну пунктуацію (тире проти дефіса, лапки) кадр не доводить: у демо
+  AC-LEAVE-04 з діапазоном дат «04.11.2026 – 06.11.2026» у `visible` дав NEEDS-HUMAN і в Haiku, і в Sonnet. Такі
+  символи перевіряйте твердженням і пишіть у `hidden`.
 
 Промпт агенту:
 
 ```text
 Напиши специфікацію Playwright tests/e2e/<область>.spec.ts для AC (дослівно нижче) за зразком
-tests/e2e/support/uat.ts і materials/uat/example.spec.ts домашки WS8. Правила:
-- назва test починається з AC ID; tag "@uat"; annotation { type: "ac", description: "<AC ID>" };
-- «Дано» і «Коли» — test.step з текстом з AC; «Тоді» — thenStep: clause — дослівний «Тоді», visible — частини, які
-  видно на екрані, hidden — частини, яких на екрані не видно (що не змінилося, сесії немає);
+tests/e2e/support/uat.ts і materials/uat/examples/users-forbidden.spec.ts домашки WS8. Правила:
+- назва test починається з AC ID; tag ["@uat"]; annotation { type: "ac", description: "<AC ID>" };
+- «Дано» і «Коли» — given(…) і when(…) з uat.ts з текстом з AC; «Тоді» — thenStep: clause — дослівний «Тоді»,
+  visible — частини, які видно на екрані (без точної пунктуації, яку кадр не доведе), hidden — частини, яких на екрані
+  не видно (що не змінилося, сесії немає, точні символи);
+- test.afterEach(async ({ page }) => attachRuntimeErrors(page));
 - твердження перевіряють ДОСЛІВНИЙ текст з AC, а не текст, скопійований з коду сторінки; якщо вони розходяться —
   зупинись і скажи мені (це розбіжність з вимогою);
 - локатори — за роллю й текстом; повідомлення role=alert шукай у межах main (Next.js має ще один alert — route
   announcer);
-- прод спільний з PM: AC лише читає; якщо AC змінює дані — тег @writes, синтетичний uat-<запуск>@example.test і
-  прибирання після тесту;
+- прод спільний з PM: AC лише читає; якщо AC змінює дані — тег @writes, синтетичний користувач uatEmail() з
+  tests/e2e/support/admin.ts і test.afterAll з deleteUatUsers(…) (зразок — users-copy-link.spec.ts);
 - не читай accounts.txt і .env.local; паролі — лише через змінні, які читає auth.setup.ts.
 Код застосунку не змінюй.
 <AC>
 ```
 
-### 5.3 Прогін на проді
+### 5.3 Прогін на проді з вердиктом агента
 
 ```powershell
-$env:UAT_BASE_URL = "https://<проєкт>.vercel.app"
-npm run uat
-npx playwright show-report uat-results/html
+npm run uat -- --url https://<проєкт>.vercel.app
+npx playwright show-report test-results/html
 ```
 
+`npm run uat` робить усе одним кроком:
+
+1. Playwright проганяє `setup` (вхід ролей, без запису) і ваші специфікації на проді: відео, trace, кадр і
+   aria-знімок у момент кожного «Тоді».
+2. Для кожного AC збирається пакет для рецензента: дослівний AC, кроки «Дано / Коли», кадри.
+3. Рецензент «наосліп» — `claude -p` в окремій теці з одним інструментом Read, без результатів тестів, коду й
+   aria-знімка. Спершу Claude Haiku 5.5; якщо твердження пройшли, а Haiku не каже PASS або його цитати немає на
+   сторінці, — автоматично Claude Sonnet 5.5, і рішення агента за ним.
+4. Підсумковий вердикт рахує код за правилами R1–R6 ([UAT-гайд](uat-guide.md#вердикт-агента)).
+5. Звіт — `docs/qa/uat/<YYYY-MM-DD>/report.md`, `manifest.json` і `frames/`.
+
+Що варто знати:
+
+- **Час і ціна в демо** (3 AC на проді): Playwright ≈40 с з входом ролей і прибиранням, весь `npm run uat` — 1 хв 07 с;
+  розбір — $0,0023 і $0,0026 за AC на Haiku, $0,0496 за AC, що дійшов до Sonnet; разом $0,0546 за цінами API. На
+  підписці окремо не тарифікується, а рахується в ліміти плану.
+- **Код виходу 1** — лише якщо якийсь AC має FAIL. NEEDS-HUMAN — рішення за PM; звіт пишеться завжди.
+- **Лише AC, що нічого не пишуть:** `npm run uat -- --url … --grep-invert @writes`.
+- **Без Claude Code:** `node scripts/uat/run.mjs --url … --skip-review` — звіт буде, але кожен вердикт NEEDS-HUMAN.
+- **Ще раз розібрати ті самі кадри** без нового прогону Playwright: `npm run uat:review`.
 - Тест упав? Спершу з'ясуйте, чия це вада: продукту (→ виправлення окремим PR, тест з AC ID), тесту (локатор, другий
   `alert`) чи формулювання AC (→ питання PM). Твердження «під продукт» не підганяйте.
-- Перегляньте відео й кадри «Тоді»: на кадрі немає оверлеїв Playwright і курсора; немає пароля, вмісту `accounts.txt`,
-  адрес не з `example.test`.
+- Перегляньте відео (`test-results/artifacts/…/video.webm`) і кадри «Тоді»: на кадрі немає оверлеїв Playwright і
+  курсора; немає пароля, вмісту `accounts.txt`, адрес не з `example.test`.
+- Вердикт руками не правте. Промпт і схему рецензента не змінюйте: інакше вердикти не порівняти.
 
-### 5.4 Вердикт агента
+Зразок звіту — UAT демо на проді 26.10:
+[`docs/qa/uat/2026-10-26/report.md`](https://github.com/koldovsky/2026-quitcode-06-leave-portal-demo/blob/ws8-03-uat/docs/qa/uat/2026-10-26/report.md)
+(AC-USERS-11 і AC-USERS-07 — PASS, AC-LEAVE-04 — NEEDS-HUMAN).
+
+### 5.4 Негативний контроль
+
+Покажіть, що ваш UAT уміє падати. Додайте `tests/e2e/negative-controls.spec.ts` за
+[зразком демо](../materials/uat/examples/negative-controls.spec.ts):
+
+- назва починається з `NC-`, а не з AC ID (тож `ac:coverage` її не рахує), тег `@negative-control`, анотації
+  `ac` (який AC) і `case` (`NC-1`);
+- **NC-1** — у твердженні навмисно інший текст «Тоді» → очікуємо **FAIL** (R1: агент не перекриває впале твердження);
+- за бажанням **NC-2** — анотація `ac-text` з іншим текстом AC, а твердження й застосунок без змін → очікуємо
+  **NEEDS-HUMAN** (R3: агент звіряє кадр із новим текстом PM і не погоджується).
 
 ```powershell
-npm run uat:review
+npm run uat:nc -- --url https://<проєкт>.vercel.app
 ```
 
-- Рецензент — `claude -p` у окремій теці лише з кадрами, дослівним AC і кроками, з одним інструментом Read. Він не
-  бачить ні результатів тестів, ні коду, ні назви кейсу. Модель за замовчуванням — Haiku 5.5; для спірного
-  NEEDS-HUMAN можна Sonnet 5.5.
-- Код об'єднує вердикти: тест упав → FAIL; агент не згоден → NEEDS-HUMAN; цитати агента немає на сторінці →
-  NEEDS-HUMAN; усе збігається → PASS.
-- Результат — `docs/qa/uat/<YYYY-MM-DD>/`: `uat-report.md`, `manifest.json`, кадри. Вердикт руками не правте.
-- Промпт і схему рецензента не змінюйте: інакше вердикт перестає бути порівнюваним.
+Звичайний `npm run uat` негативних контролів не запускає, тож файл можна тримати в `main`. Звіт — у
+`test-results/uat-report-nc/report.md` (не в git). Його рядки разом із рядками звичайного звіту — в опис PR. У демо:
+NC-1 → FAIL, NC-2 → NEEDS-HUMAN.
 
-### 5.5 Негативний контроль
+### 5.5 Що з даними
 
-У тимчасовій гілці змініть у специфікації одне слово в очікуваному тексті «Тоді» (і в твердженні, і в `clause`) →
-`npm run uat` → `npm run uat:review` → вердикт **FAIL**. За бажанням — змініть лише `clause` і `visible`, а твердження
-лишіть: агент має не знайти тексту на кадрі → NEEDS-HUMAN. Рядки звіту «до» і «після» — в опис PR. У `main` контроль
-не зливайте.
+- **AC лише читає** (відмова, стан інтерфейсу, перегляд власних даних) — нічого робити не треба.
+- **AC пише в базу** (тег `@writes`): лише синтетичний `uat-<запуск>@example.test` (`uatEmail()` з
+  `tests/e2e/support/admin.ts`), `test.afterAll` з `deleteUatUsers(…)`, а teardown `cleanup` ще раз перевіряє, що
+  жодного `uat-*` не лишилось. Для цього потрібні `NEXT_PUBLIC_SUPABASE_URL` і `SUPABASE_SECRET_KEY` у `.env.local`
+  (локально, як для `npm run users:demo`); у GitHub Secrets ключ не додаємо. Таблиці з FK на користувача без
+  `on delete cascade` — в `OWNED_ROWS`. Рядок «Прибирання» у звіті — доказ для PR.
 
 ### 5.6 PR і передача PM
 
-1. Закомітьте `docs/qa/uat/<дата>/` (звіт, `manifest.json`, кадри), специфікації, `playwright.config.ts`, скрипти.
-   Відео, trace й HTML-звіт — **не** в git.
+1. Закомітьте `docs/qa/uat/<дата>/` (`report.md`, `manifest.json`, `frames/`), специфікації,
+   `playwright.config.ts`, скрипти. Відео, trace й HTML-звіт (`test-results/`) — **не** в git.
 2. `docs/conformance.md`: рядки ваших 3 AC → `реалізовано` зі шляхом до специфікації; `npm run ac:coverage` зелений.
-3. Опис PR: таблиця C з proof pack, рядки негативного контролю. Відео перетягніть в опис PR (~1–2 МБ на AC). Якщо
-   GitHub не приймає `.webm` — `ffmpeg -i video.webm video.mp4`.
+3. Опис PR: таблиця C з proof pack, рядки негативного контролю. Відео перетягніть в опис PR (0,8–1,7 МБ на AC у
+   демо). Якщо GitHub не приймає `.webm` — `ffmpeg -i video.webm video.mp4`.
 4. `@coderabbitai review` → злиття.
 5. У чат команди: «UAT готовий: звіт <посилання>, PR <посилання>, AC: …. Прийміть, будь ласка, до кінця 03.11».
 
@@ -420,8 +537,9 @@ npm run uat:review
    Міграції з PR до злиття не застосовуються, а от код Server Action на preview живий.
 3. **Ключ відповідей** — у файлі поза репо (наприклад, у `Documents`), доки обидва рецензенти не відпрацюють.
 4. PR → окремим коментарем `@coderabbitai review` → дочекайтеся завершеного рев'ю.
-5. `/code-review high <номер PR>` у Claude Code в клоні вашого репо. Або без інтерактиву:
-   `claude -p "/code-review high <номер PR>"` — тоді знахідки прийдуть у вивід. Вивід збережіть.
+5. `/code-review high <номер PR>` у Claude Code в клоні вашого репо. Або без інтерактиву — командою з
+   [гайду](gates-guide.md#ai-ревю--дорадчий-шар) (`claude -p … --setting-sources project --output-format json`):
+   знахідки прийдуть у JSON. Вивід збережіть і назвіть модель рецензента.
 6. **Таблиця з цитатами** (розділ D proof pack) і ключ — одним коментарем у PR.
 7. **Правило, що закриває пропуск:**
    - рядок в `AGENTS.md` (його читають обидва рецензенти) або path instruction у `.coderabbit.yaml` — окремим PR у
@@ -437,8 +555,13 @@ npm run uat:review
 ## 8. Відхилення від PM — трек C
 
 PM приймає ваші 3 AC за UAT-звітом і в браузері. На кожне розходження PM відкриває у вашому репо issue «Відхилення від
-вимог» (форма з [`materials/issue-templates/deviation.yml`](../materials/issue-templates/deviation.yml); покладіть її в
-`.github/ISSUE_TEMPLATE/` і створіть мітку: `gh label create "відхилення" --color D93F0B`).
+вимог» (форма з [`materials/issue-templates/deviation.yml`](../materials/issue-templates/deviation.yml)). Покладіть її
+у своє репо ще до передачі звіту PM (найкраще — у PR кроку 5) і створіть мітку:
+
+```powershell
+curl.exe -fsSL --create-dirs -o .github/ISSUE_TEMPLATE/deviation.yml "$B/issue-templates/deviation.yml"
+gh label create "відхилення" --color D93F0B
+```
 
 - **Ваша вада** — PR з тестом, що відтворює відхилення (AC ID у назві), і `Fixes #N` в описі; новий прогін UAT для
   цього AC.
@@ -451,15 +574,26 @@ PM приймає ваші 3 AC за UAT-звітом і в браузері. Н
 
 ## Бонус (+5) — одне з двох
 
-- **UAT у CI через `workflow_dispatch`.** Workflow `uat.yml` з входом `base_url`:
-  - кроки: `npm ci`, `npx playwright install --with-deps chromium --only-shell`, `npm run uat`;
-  - звіт, кадри й `manifest.json` — `actions/upload-artifact`;
-  - облікові дані — GitHub Secrets (environment `uat`). Акаунт — **з найменшими правами**, бо артефакти публічного репо
-    може завантажити будь-хто. Або лише AC без входу;
-  - `SUPABASE_SECRET_KEY` — не потрібен і не додаємо;
-  - вердикт агента — локально на завантаженому артефакті, або в CI: підписка — `CLAUDE_CODE_OAUTH_TOKEN` з `claude
-    setup-token`, без `--bare`; API — `ANTHROPIC_API_KEY` з `--bare`.
-  - Доказ — зелений прогін на вашому прод-URL.
+- **UAT у CI з `workflow_dispatch`** — ті самі специфікації `tests/e2e/*.spec.ts` у GitHub Actions. Два шляхи:
+  - **Простіший і перевірений у демо — [`e2e.yml`](../materials/uat/.github/workflows/e2e.yml) з матеріалів.**
+    Одноразовий Supabase у раннері (`supabase start`) з вашими міграціями, `seed.sql` і користувачами з
+    `supabase/demo-users.json` (пароль випадковий на кожен прогін), збірка, Playwright. Хмарних секретів немає зовсім,
+    тож і `@writes`-тести безпечні. Тригери: `pull_request`, `push` у `main`, `workflow_dispatch`. У демо — зелений
+    4 з 4 прогонів: 6 тестів ≈23 с, job ≈2 хв 40 с – 3 хв 20 с, артефакт `e2e-<run_id>` ≈52 МБ. Дані, яких немає в
+    `seed.sql`, специфікація створює сама.
+
+    ```powershell
+    curl.exe -fsSL --create-dirs -o .github/workflows/e2e.yml "$B/uat/.github/workflows/e2e.yml"
+    ```
+
+  - **Проти вашого проду** — власний `uat.yml` з входом `base_url`: `npm ci`, `npx playwright install --with-deps
+    chromium --only-shell`, `npm run uat -- --url <base_url>`; звіт, кадри й `manifest.json` —
+    `actions/upload-artifact`. Пароль — GitHub Secrets (краще environment `uat`), акаунт **з найменшими правами**:
+    артефакти публічного репо може завантажити будь-хто. `SUPABASE_SECRET_KEY` не додаємо, тож лише AC, що нічого не
+    пишуть (`--grep-invert @writes`). Вердикт агента — локально на завантаженому артефакті або в CI: підписка —
+    `CLAUDE_CODE_OAUTH_TOKEN` з `claude setup-token`, без `--bare`; API — `ANTHROPIC_API_KEY` з `--bare`. У демо цей
+    шлях не будували.
+  - Доказ — зелений прогін з `workflow_dispatch` (посилання на run) і артефакт.
 - **Eval свого скіла** (наприклад, `spec-review` з шаблону): ≥3 кейси × ≥3 прогони, pass rate зі скілом і без нього.
   Як — у [гайді з воріт](gates-guide.md#бонус-eval-свого-скіла).
 

@@ -75,7 +75,7 @@ PM здає репо вимог <pm>/<team-slug>-spec, розробник — с
 - Якість тестів — убитий мутант (B): <!-- файл:рядок мутанта → AC → тест …/blob/<SHA>/tests/…#L<N> -->
 - SQL-мутація (B): <!-- …/pull/N з виводом npm run mutation:sql, або «немає PGlite-гарнесу» -->
 - UAT — специфікації (C): <!-- …/blob/<SHA>/tests/e2e/….spec.ts, … -->
-- UAT — звіт на проді (C): <!-- …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/uat-report.md -->
+- UAT — звіт на проді (C): <!-- …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md -->
 - UAT — PR зі звітом і відео (C): <!-- …/pull/N (відео — вкладенням в описі) -->
 - UAT — негативний контроль (C): <!-- …/pull/N: рядок «до» і «після» -->
 - Рядки `docs/conformance.md` (C): <!-- AC ID зі статусами після WS8: AC-…-NN (реалізовано), … -->
