@@ -81,11 +81,12 @@ reviews:
         «Як доводимо» — …/issues/N з коментарем або …/blob/<SHA>/docs/product.md(#…); «Питання, на які ви
         відповіли» — …/issues/N або «питань не було»; «Зміни вимог із журналом змін» — щонайменше одне
         посилання на коментар, коміт чи файл («змін не було» — ⚠️: рубрика D вимагає щонайменше одну зміну,
-        без питань — «власне рішення PM»). Таблиця «Приймання за UAT»: щонайменше 2 різні логіни розробників,
-        у кожного рядки на його AC (зазвичай 3), або рядок «не прийнято: <причина, дата>» і план приймання для
-        бракуючого; «Вердикт агента» — PASS, FAIL або NEEDS-HUMAN; «Ваше рішення» — ✅, ❌ або «NEEDS-HUMAN → …»;
-        у «Як перевірено» акаунти — лише адреси *@example.test; кожен ❌ має посилання
-        https://github.com/<dev>/<repo>/issues/N у репо розробника (owner ≠ «Ваше репо» — це нормально).
+        без питань — «власне рішення PM»). Розділ «Приймання за UAT»: самі рядки приймання з оцінками живуть у
+        приватній Google Таблиці курсу, тож markdown-таблиці тут немає, і це правильно. «Таблиця приймання PM» —
+        «заповнено» з логінами щонайменше 2 різних розробників (або план приймання для бракуючого:
+        AC × роль × кроки × очікуване); адреса docs.google.com у файлі — ⚠️ (репо публічне, адресу таблиці сюди не
+        пишуть); «Відхилення від вимог» — посилання https://github.com/<dev>/<repo>/issues/N у репо розробників
+        (owner ≠ «Ваше репо» — це нормально) або «відхилень немає».
         «Звірка …» — текст про знайдену розбіжність або «перевірено: розбіжностей немає» з тим, що звірено;
         «Підпис у репо розробників» — посилання на коментарі в репо розробників.
         dev: розділ «D0»: «/api/health» — https://…/api/health з тим самим хостом, що «Прод-URL»; «Зелений
@@ -205,10 +206,12 @@ reviews:
           заборонена роль / не увійшов) and at least one UI-state AC ID; "Питання, на які ви відповіли" are
           /issues/N links or "питань не було"; "Зміни вимог із журналом змін" has at least one link to a
           comment, commit or file ("змін не було" is a FAIL: rubric D requires at least one change, a "власне
-          рішення PM" if no questions came); the "Приймання за UAT" table has rows for at least two different
-          developer logins (or a row "не прийнято: <причина, дата>" plus an acceptance plan for the missing one),
-          "Вердикт агента" is PASS, FAIL or NEEDS-HUMAN, accounts only as *@example.test addresses, every ❌ row
-          links to an /issues/N in a developer repository; "Звірка" and "Підпис у репо розробників" are filled.
+          рішення PM" if no questions came); in "Приймання за UAT" the per-AC rows and scores
+          live in the course's private Google Sheet, so there is no markdown table here and that is correct:
+          "Таблиця приймання PM" says it is filled and names at least two different developer logins (or gives an
+          acceptance plan, AC × роль × кроки × очікуване, for the missing one); a docs.google.com address in the
+          file is a warning (public repo); "Відхилення від вимог" lists /issues/N links in developer repositories
+          or says "відхилень немає"; "Звірка" and "Підпис у репо розробників" are filled.
           For dev: the D0 block has an https://…/api/health link on the Прод-URL host, an /actions/runs/N link
           for smoke, a /blob/<SHA>/accounts.zip link in "Ваше репо", roles with *@example.test addresses only,
           and a next version of 16.4.1 or later (16.4.0 or older is a FAIL); "3 AC" names exactly three AC IDs
