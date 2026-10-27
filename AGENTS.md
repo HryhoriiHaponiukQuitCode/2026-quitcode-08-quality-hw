@@ -22,7 +22,7 @@
   - `dev`: D0 (`/api/health`, прогін `smoke`, `accounts.zip` на SHA, ролі акаунтів — **лише адреси**, версія `next`),
     3 AC, proof pack, PR і прогони воріт, якості тестів, UAT, eval рецензента.
 - Пояснює кроки з `docs/walkthrough-pm.md`, `docs/walkthrough-dev.md`, `docs/deploy-d0.md`, `docs/gates-guide.md`,
-  `docs/testing-guide.md`, `docs/uat-guide.md` і `materials/README.md`.
+  `docs/testing-guide.md`, `docs/uat-guide.md`, `docs/prompts.md` (бібліотека промптів) і `materials/README.md`.
 
 ## Межі
 

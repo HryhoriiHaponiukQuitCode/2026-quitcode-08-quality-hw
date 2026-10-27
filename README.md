@@ -7,7 +7,8 @@
   вимоги PM — <https://github.com/koldovsky/2026-quitcode-06-spec-template>,
   проєкт розробника — <https://github.com/koldovsky/2026-quitcode-06-project-template>
 - **Покрокові інструкції:** [трек PM](docs/walkthrough-pm.md) · [трек розробника](docs/walkthrough-dev.md)
-- **Гайди:** [розгортання D0 і тестові акаунти](docs/deploy-d0.md) · [детерміновані ворота](docs/gates-guide.md) ·
+- **Гайди:** [**бібліотека промптів: що дати агенту й що перевірити**](docs/prompts.md) ·
+  [розгортання D0 і тестові акаунти](docs/deploy-d0.md) · [детерміновані ворота](docs/gates-guide.md) ·
   [якість тестів](docs/testing-guide.md) · [UAT із записом і вердиктом агента](docs/uat-guide.md) ·
   [матеріали для копіювання у ваше репо](materials/README.md)
 
@@ -411,6 +412,7 @@ git, зокрема в історії, — справжній витік: пар
 | Шлях | Що це |
 |---|---|
 | `docs/walkthrough-dev.md`, `docs/walkthrough-pm.md` | покрокові інструкції з бюджетами часу, доказами й промптами |
+| `docs/prompts.md` | бібліотека промптів WS8 (P01–P27): коли давати, повний текст, що перевірити в результаті |
 | `docs/deploy-d0.md` | D0: чекліст, `/api/health`, `smoke.yml`, самоперевірка, тестові акаунти й `accounts.zip` |
 | `docs/gates-guide.md` | детерміновані ворота: fallow, тестові правила лінтера, `npm audit`; AI-рев'ю як дорадчий шар; eval рецензента й скіла |
 | `docs/testing-guide.md` | покриття, мутації (Stryker, SQL), запахи тестів, тести з AC, який рівень для якого AC |

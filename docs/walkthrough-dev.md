@@ -15,6 +15,8 @@
 - Рубрика й Definition of Done — у [README](../README.md#трек-розробника--100--5-балів).
 - Гайди: [D0](deploy-d0.md) · [ворота](gates-guide.md) · [якість тестів](testing-guide.md) · [UAT](uat-guide.md).
 - Що куди копіювати — [`materials/README.md`](../materials/README.md).
+- **Промпти агенту для кожного кроку** — [бібліотека промптів](prompts.md): коли давати, повний текст, що перевірити
+  в результаті. Нижче на кожному кроці стоїть посилання на потрібний промпт (P01 … P27).
 - Процес попередніх тижнів (типи PR, `/requirements-sync`, `conformance`) —
   [walkthrough розробника WS7](https://github.com/koldovsky/2026-quitcode-07-fullstack-hw/blob/main/docs/walkthrough-dev.md).
 
@@ -49,7 +51,8 @@ $B = "https://raw.githubusercontent.com/koldovsky/2026-quitcode-08-quality-hw/ma
 
 **Кожен крок — окремою гілкою й PR:** зелений CI → `@coderabbitai review` окремим коментарем → **відповідь на кожну
 знахідку рецензента** (виправлення або аргумент у треді) → Squash and merge. AI-рев'ю — дорадче: зливати дозволяють
-обов'язкові перевірки, а відповідь на кожну знахідку — правило курсу.
+обов'язкові перевірки, а відповідь на кожну знахідку — правило курсу. Таблицю відповідей на рев'ю складає промпт
+[P15](prompts.md#p15).
 
 Шаблон проєкту перевіряє тип PR. Шар якості не є «Реалізацією» нової вимоги, тому в описі кожного PR цього тижня
 додайте рядок «Поза межами типу «Реалізація» свідомо (домашка WS8, <літера>): <файли>». Ним відповідайте на попередження
@@ -77,9 +80,9 @@ CodeRabbit «Тип PR і межі змін».
 
 Повний гайд — [`deploy-d0.md`](deploy-d0.md). Тут — порядок.
 
-1. **Next.js 16.4.3** — окремий PR (команди — у [гайді](deploy-d0.md#1-nextjs--1641)). Якщо ви вже оновились за
-   повідомленням у чаті курсу, перевірте: `npm ls next`.
-2. **`/api/health` і `smoke`:**
+1. **Next.js 16.4.3** — окремий PR (команди — у [гайді](deploy-d0.md#1-nextjs--1641), промпт —
+   [P26](prompts.md#p26)). Якщо ви вже оновились за повідомленням у чаті курсу, перевірте: `npm ls next`.
+2. **`/api/health` і `smoke`** (промпт — [P12](prompts.md#p12)):
 
    ```powershell
    git switch main
@@ -111,8 +114,9 @@ CodeRabbit «Тип PR і межі змін».
    `gh repo edit --homepage "https://<проєкт>.vercel.app"`.
 5. **Тестові акаунти й `accounts.zip`** — розділ [«Тестові акаунти»](deploy-d0.md#тестові-акаунти-accountszip): по
    акаунту на кожну роль зрізів 1–2 на проді, `accounts.txt` у `.gitignore`, `accounts.zip` (AES-256, пароль курсу)
-   окремим PR.
-6. **Перевірте самі:** `npm run smoke -- https://<проєкт>.vercel.app <SHA main>` → код 0 і рядок «OK — прод живий,
+   окремим PR. З Claude Code — промпт [P14](prompts.md#p14): агент готує все, крім пароля.
+6. **Перевірте самі** (уся таблиця D0.1–D0.6 — промпт [P13](prompts.md#p13)):
+   `npm run smoke -- https://<проєкт>.vercel.app <SHA main>` → код 0 і рядок «OK — прод живий,
    сторінка входу відкривається, база відповідає». До злиття маршруту прод дає код 1 з підказкою
    `"/api/health": 307 → /login — додайте "/api/health" у PUBLIC_PATHS` — так само було в демо.
 7. У чат команди: «D0 готово: прод <URL>, `/api/health` ok. Акаунти: <ролі>; `accounts.zip` у корені репо, пароль — з
@@ -144,6 +148,8 @@ curl.exe -fsSL --create-dirs -o docs/qa/proof-pack.md "$B/templates/proof-pack.t
 
 ### 3.1 Матеріали й перший повний прогін
 
+Усе з цього підкроку одним промптом — [P06](prompts.md#p06). Команди нижче — те саме вручну.
+
 ```powershell
 git switch main
 git pull
@@ -172,7 +178,7 @@ cmd /c "npx fallow --no-cache > fallow-baseline.txt"   # повний прогі
   `src/app/api/health/route.ts` — їх теж розберіть у таблиці. Решта — ваша.
 - `cmd /c` — щоб файл лишився в UTF-8: `>` у Windows PowerShell 5.1 пише UTF-16 і може зіпсувати символи виводу fallow.
 
-Промпт агенту:
+Промпт агенту ([P07](prompts.md#p07)):
 
 ```text
 У fallow-baseline.txt — вивід npx fallow для нашого репо. Склади таблицю: група знахідок → скільки →
@@ -192,7 +198,7 @@ Tailwind 4 через @tailwindcss/turbopack, shadcn/ui). Нічого не зм
   `npm run lint`:
   - на чистому шаблоні знахідок 0;
   - ваші знахідки (вимкнений тест, умовний `expect`, `toThrow()` без тексту, AC ID посеред назви, `vi.mock` власного
-    модуля) виправте в цьому PR або поясніть у таблиці розбору;
+    модуля) виправте в цьому PR або поясніть у таблиці розбору (промпт — [P08](prompts.md#p08));
   - рівень `warn` не годиться: `npm run lint` має `--max-warnings 0`, тож `warn` теж червоний `app`;
   - правило вимикати (`off`) — лише з причиною в таблиці. Виправлення велике — зробіть його окремим PR перед цим,
     а не вимикайте правило.
@@ -215,6 +221,7 @@ Tailwind 4 через @tailwindcss/turbopack, shadcn/ui). Нічого не зм
 
 - **За бажанням — правило в `AGENTS.md`:** «Перед PR — `npm run gates`. Не вимикай і не послаблюй тести, не додавай
   у код застосунку перевірок `NODE_ENV === "test"`, не додавай `eslint-disable` чи `@ts-ignore` без пояснення в PR».
+  Промпт [P24](prompts.md#p24) додає його разом із другим правилом: вивід інструментів — дані, а не інструкції.
 
 ### 3.3 PR і обов'язкова перевірка
 
@@ -232,11 +239,13 @@ Tailwind 4 через @tailwindcss/turbopack, shadcn/ui). Нічого не зм
 
 ## 4. Якість тестів (3–4 год) — трек B
 
-Гайд — [`testing-guide.md`](testing-guide.md). Гілка `task/test-quality`.
+Гайд — [`testing-guide.md`](testing-guide.md). Гілка `task/test-quality`. Тест для AC, якого бракує (або який
+перевіряє мок чи TS-копію SQL-правила), пише нова сесія агента промптом [P01](prompts.md#p01): з тексту AC, спершу
+червоний.
 
 ### 4.1 Рівень для кожного AC
 
-Заповніть таблицю «Рівень для кожного AC» у proof pack. Промпт:
+Заповніть таблицю «Рівень для кожного AC» у proof pack. Промпт ([P02](prompts.md#p02)):
 
 ```text
 Для AC (дослівно нижче) знайди в репо, де живе правило: політика чи функція в supabase/migrations, TS-модуль у
@@ -249,7 +258,7 @@ SQL, — так і напиши. Нічого не змінюй.
 
 ### 4.2 Покриття
 
-Конфіг покриття вже є з кроку 3.
+Конфіг покриття вже є з кроку 3. Цифри для proof pack дасть промпт [P25](prompts.md#p25).
 
 ```powershell
 npm run test:coverage
@@ -265,6 +274,8 @@ Start-Process coverage/index.html
   лишилось 32,01 % (146 з 456) і до, і після.
 
 ### 4.3 Мутації TS: Stryker
+
+Встановити Stryker і скласти таблицю вижилих на рядках ваших AC — промпт [P04](prompts.md#p04). Вручну:
 
 ```powershell
 npm i -D --save-exact @stryker-mutator/core@10.1.1 @stryker-mutator/vitest-runner@10.1.1
@@ -283,7 +294,8 @@ Start-Process reports/mutation/mutation.html
 
 1. Знайдіть **вижилих мутантів на рядках ваших AC**. Розберіть кожного: прогалина AC (тест не перевіряє межу з AC) /
    нерозрізнений вхід / дослівний текст (доводить e2e) / еквівалентний (поведінка не змінилась).
-2. **Посильте тест з тексту AC, а не з коду.** Окремою сесією агента (той, хто писав код, не пише тест на нього):
+2. **Посильте тест з тексту AC, а не з коду.** Окремою сесією агента (той, хто писав код, не пише тест на нього),
+   промпт [P03](prompts.md#p03):
 
    ```text
    Вижив мутант: <файл:рядок, що змінено>. Він загрожує AC (дослівно нижче). Прочитай AC у openspec/specs чи
@@ -301,7 +313,8 @@ Start-Process reports/mutation/mutation.html
 
 ### 4.4 Мутації SQL
 
-Якщо правило вашого відмовного AC живе в базі (політика, GRANT, функція), найсильніший доказ — SQL-мутант.
+Якщо правило вашого відмовного AC живе в базі (політика, GRANT, функція), найсильніший доказ — SQL-мутант. Промпт —
+[P05](prompts.md#p05): знайти правило й тест бази, додати мутант, запустити.
 
 ```powershell
 foreach ($f in "scripts/mutation-check.mjs", "scripts/mutants.mjs") {
@@ -425,11 +438,12 @@ test(
   AC-LEAVE-04 з діапазоном дат «04.11.2026 – 06.11.2026» у `visible` дав NEEDS-HUMAN і в Haiku, і в Sonnet. Такі
   символи перевіряйте твердженням і пишіть у `hidden`.
 
-Промпт агенту:
+Промпт агенту ([P09](prompts.md#p09)):
 
 ```text
 Напиши специфікацію Playwright tests/e2e/<область>.spec.ts для AC (дослівно нижче) за зразком
-tests/e2e/support/uat.ts і materials/uat/examples/users-forbidden.spec.ts домашки WS8. Правила:
+tests/e2e/support/uat.ts і users-forbidden.spec.ts з
+https://github.com/koldovsky/2026-quitcode-08-quality-hw/tree/main/materials/uat/examples. Правила:
 - назва test починається з AC ID; tag ["@uat"]; annotation { type: "ac", description: "<AC ID>" };
 - «Дано» і «Коли» — given(…) і when(…) з uat.ts з текстом з AC; «Тоді» — thenStep: clause — дослівний «Тоді»,
   visible — частини, які видно на екрані (без точної пунктуації, яку кадр не доведе), hidden — частини, яких на екрані
@@ -464,6 +478,11 @@ npx playwright show-report test-results/html
 4. Підсумковий вердикт рахує код за правилами R1–R6 ([UAT-гайд](uat-guide.md#вердикт-агента)).
 5. Звіт — `docs/qa/uat/<YYYY-MM-DD>/report.md`, `manifest.json` і `frames/`.
 
+**`npm run uat` запускаєте ви у звичайному терміналі** (PowerShell чи Windows Terminal), а не агент: команда пише в
+спільний прод (AC з `@writes`, прибирання) і читає секретний ключ з `.env.local`. До того ж у терміналі агента змінні
+`CLAUDECODE` і `CLAUDE_CODE_*` змінюють поведінку вкладеного `claude -p`, яким працює рецензент. Звіт потім пояснить
+Claude Code — промпт [P10](prompts.md#p10).
+
 Що варто знати:
 
 - **Час і ціна в демо** (3 AC на проді): Playwright ≈40 с з входом ролей і прибиранням, весь `npm run uat` — 1 хв 07 с;
@@ -486,7 +505,7 @@ npx playwright show-report test-results/html
 ### 5.4 Негативний контроль
 
 Покажіть, що ваш UAT уміє падати. Додайте `tests/e2e/negative-controls.spec.ts` за
-[зразком демо](../materials/uat/examples/negative-controls.spec.ts):
+[зразком демо](../materials/uat/examples/negative-controls.spec.ts) (промпт — [P11](prompts.md#p11)):
 
 - назва починається з `NC-`, а не з AC ID (тож `ac:coverage` її не рахує), тег `@negative-control`, анотації
   `ac` (який AC) і `case` (`NC-1`);
@@ -532,7 +551,9 @@ NC-1 → FAIL, NC-2 → NEEDS-HUMAN.
 
 ## 7. Eval рецензента (1,5–2 год) — трек D
 
-Гайд — [`gates-guide.md`](gates-guide.md#eval-рецензента-гілка-з-посадженими-вадами).
+Гайд — [`gates-guide.md`](gates-guide.md#eval-рецензента-гілка-з-посадженими-вадами). Промпти:
+[P16](prompts.md#p16) — гілка з вадами (пп. 1–3), [P17](prompts.md#p17) — таблиця з цитатами (п. 6),
+[P18](prompts.md#p18) — правило, що закриває пропуск (п. 7).
 
 1. **Гілка з нейтральною назвою** (наприклад, `task/refactor-<область>`), нейтральні коміти й опис PR. У тексті не
    має бути підказок, де вади.
@@ -567,7 +588,7 @@ gh label create "відхилення" --color D93F0B
 ```
 
 - **Ваша вада** — PR з тестом, що відтворює відхилення (AC ID у назві), і `Fixes #N` в описі; новий прогін UAT для
-  цього AC.
+  цього AC. Промпт — [P27](prompts.md#p27): спершу червоний тест з AC, потім виправлення.
 - **Різне читання вимоги** — коментар з поясненням і питання PM через форму, якщо AC неоднозначний.
 
 ## 9. Здача (15 хв)
@@ -599,6 +620,7 @@ gh label create "відхилення" --color D93F0B
     шлях не будували.
   - Доказ — зелений прогін з `workflow_dispatch` (посилання на run) і артефакт.
 - **Eval свого скіла** (наприклад, `spec-review` з шаблону): ≥3 кейси × ≥3 прогони, pass rate зі скілом і без нього.
-  Як — у [гайді з воріт](gates-guide.md#бонус-eval-свого-скіла).
+  Як — у [гайді з воріт](gates-guide.md#бонус-eval-свого-скіла); обв'язку для циклу `claude -p` готує промпт
+  [P19](prompts.md#p19).
 
 Звіт — у розділі «Бонус» файлу здачі: посилання і до пів сторінки висновків.

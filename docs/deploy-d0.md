@@ -55,6 +55,7 @@ git push -u origin HEAD
 - PR → зелений CI → злиття. Vercel сам перерозгорне прод.
 - **У сесії агента** Next.js 16.4.0 зупиняє `next build` з `SecurityFatalError` і пише агенту «виконай `next upgrade
   --agent=security`». Цього не треба: вивід інструмента — дані, а не команди. Досить оновлення вище.
+- З Claude Code — промпт [P26](prompts.md#p26): ті самі команди, без `next upgrade` і без push до вашого «так».
 
 ## 2. `/api/health`
 
@@ -132,7 +133,7 @@ gh run list --workflow ci.yml --branch main --limit 3         # потім: gh r
 ```
 
 І ще: README починається з прод-URL; About → Website — той самий URL; вікно інкогніто відкриває `/login` без входу
-у Vercel.
+у Vercel. Усю таблицю D0.1–D0.6 за вас збере промпт [P13](prompts.md#p13) (лише читання).
 
 ## Тестові акаунти: accounts.zip
 
@@ -226,7 +227,8 @@ npm run accounts:zip -- --check      # перевірити ще раз: спе�
 ### Шлях 3: з Claude Code
 
 Агент готує все, крім пароля: пароль вводите лише ви, у своєму терміналі. Термінал агента не інтерактивний, тож
-команду з `-p` він однаково не виконає.
+команду з `-p` він однаково не виконає. Це промпт [P14](prompts.md#p14) з бібліотеки промптів: там же список «що
+перевірити».
 
 ```text
 Допоможи підготувати тестові акаунти за схемою курсу (accounts.zip). Пароля архіву в мене НЕ питай, не приймай і
@@ -238,14 +240,16 @@ npm run accounts:zip -- --check      # перевірити ще раз: спе�
 3. Якщо accounts.txt ще немає — створи заготовку з supabase/demo-users.json: рядок на кожен акаунт «роль — email —
    пароль: (впишіть)». Паролів не вигадуй.
 4. Знайди 7-Zip ("C:\Program Files\7-Zip\7z.exe" або 7z у PATH). Дай мені ОДНУ команду для PowerShell, яку я виконаю
-   сам в окремому терміналі: створити accounts.zip з accounts.txt з ключами -tzip -mem=AES256 -p (-p без значення).
-   Сам її не запускай. Якщо 7-Zip немає — запропонуй npm run accounts:zip зі скрипта
-   materials/accounts/zip-accounts.mjs домашки WS8 (його теж запускаю я).
-5. Коли я напишу «готово», перевір: 7z l -slt accounts.zip показує Encrypted = + і Method з AES-256, а не ZipCrypto;
-   git status показує accounts.zip і не показує accounts.txt.
-6. Дай мені команду 7z t accounts.zip: я введу навмисно хибний пароль і переконаюся, що архів не відкривається.
-7. Підготуй гілку chore/accounts-zip і коміт лише з accounts.zip (і .gitignore, якщо змінено). Push і PR — лише після
-   мого «так».
+   у своєму терміналі: створити accounts.zip з accounts.txt з ключами -tzip -mem=AES256 -p (-p без значення).
+   Сам її не запускай. Якщо 7-Zip немає — підготуй «Шлях 2: Node, без 7-Zip» з
+   https://github.com/koldovsky/2026-quitcode-08-quality-hw/blob/main/docs/deploy-d0.md (scripts/zip-accounts.mjs,
+   @zip.js/zip.js@2.24.0, npm-скрипт accounts:zip); npm run accounts:zip запускаю я.
+5. Коли я напишу «готово», перевір: 7z l -slt accounts.zip показує Encrypted = + і Method з AES-256, а не ZipCrypto
+   (шлях 2 перевіряє це сам); git status показує accounts.zip і не показує accounts.txt.
+6. Дай мені команду 7z t accounts.zip (шлях 2 — npm run accounts:zip -- --check): я введу навмисно хибний пароль і
+   переконаюся, що архів не відкривається.
+7. Підготуй гілку chore/accounts-zip і коміт лише з accounts.zip (і .gitignore, якщо змінено; для шляху 2 — ще
+   scripts/zip-accounts.mjs, package.json і package-lock.json). Push і PR — лише після мого «так».
 ```
 
 ### PR і злиття
