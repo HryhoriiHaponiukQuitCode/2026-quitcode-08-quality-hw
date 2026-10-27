@@ -83,8 +83,8 @@ reviews:
         посилання на коментар, коміт чи файл («змін не було» — ⚠️: рубрика D вимагає щонайменше одну зміну,
         без питань — «власне рішення PM»). Розділ «Приймання за UAT»: самі рядки приймання з оцінками живуть у
         приватній Google Таблиці курсу, тож markdown-таблиці тут немає, і це правильно. «Таблиця приймання PM» —
-        «заповнено» з логінами щонайменше 2 різних розробників (або план приймання для бракуючого:
-        AC × роль × кроки × очікуване); адреса docs.google.com у файлі — ⚠️ (репо публічне, адресу таблиці сюди не
+        «заповнено» з логінами розробників команди (PM приймає всіх, хто подав звіт; менше 2 різних логінів без плану
+        приймання для бракуючого — AC × роль × кроки × очікуване — ⚠️); адреса docs.google.com у файлі — ⚠️ (репо публічне, адресу таблиці сюди не
         пишуть); «Відхилення від вимог» — посилання https://github.com/<dev>/<repo>/issues/N у репо розробників
         (owner ≠ «Ваше репо» — це нормально) або «відхилень немає».
         «Звірка …» — текст про знайдену розбіжність або «перевірено: розбіжностей немає» з тим, що звірено;
@@ -100,7 +100,7 @@ reviews:
         «SQL-мутація» — …/pull/N або «немає PGlite-гарнесу»; «UAT — специфікації» — щонайменше одне посилання
         …/blob/<SHA>/tests/e2e/….spec.ts; «UAT — звіт на проді» — …/blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md;
         «Рядки docs/conformance.md» — AC ID зі статусами; «Eval рецензента» — PR …/pull/N, таблиця й правило —
-        …/pull/N#issuecomment-M чи …/commit/<sha>; «Відхилення від PM» — …/issues/N з відповідями або
+        …/pull/N#issuecomment-M чи …/commit/<sha>; «Відхилення від PM (C)» — …/issues/N з відповідями або
         «не надходило». Бонус — «—» або опис із посиланням.
         Посилання на accounts.zip — нормально: це зашифрований архів тестових акаунтів за схемою курсу.
         Плейсхолдери <…>, «…» чи незаповнені коментарі-підказки замість значень — ⚠️. Повне ім'я людини
@@ -208,8 +208,9 @@ reviews:
           comment, commit or file ("змін не було" is a FAIL: rubric D requires at least one change, a "власне
           рішення PM" if no questions came); in "Приймання за UAT" the per-AC rows and scores
           live in the course's private Google Sheet, so there is no markdown table here and that is correct:
-          "Таблиця приймання PM" says it is filled and names at least two different developer logins (or gives an
-          acceptance plan, AC × роль × кроки × очікуване, for the missing one); a docs.google.com address in the
+          "Таблиця приймання PM" says it is filled and names the team's developer logins (the PM accepts every
+          developer who posted a report; fewer than two different logins without an acceptance plan, AC × роль ×
+          кроки × очікуване, for the missing one is a warning); a docs.google.com address in the
           file is a warning (public repo); "Відхилення від вимог" lists /issues/N links in developer repositories
           or says "відхилень немає"; "Звірка" and "Підпис у репо розробників" are filled.
           For dev: the D0 block has an https://…/api/health link on the Прод-URL host, an /actions/runs/N link
@@ -219,7 +220,7 @@ reviews:
           UAT and reviewer-eval fields are /pull/N, /actions/runs/N, /blob/<SHA>/... or #issuecomment-M links
           in "Ваше репо" as the template asks; "UAT — звіт на проді" points to
           /blob/<SHA>/docs/qa/uat/<YYYY-MM-DD>/report.md; "SQL-мутація" is a /pull/N link or
-          "немає PGlite-гарнесу"; "Відхилення від PM" lists /issues/N links or "не надходило".
+          "немає PGlite-гарнесу"; "Відхилення від PM (C)" lists /issues/N links or "не надходило".
           Бонус is "—" or a description with a link.
           Placeholders such as <…>, "…" or untouched template comments instead of values are a FAIL.
           List every missing or malformed field. Answer in Ukrainian.
