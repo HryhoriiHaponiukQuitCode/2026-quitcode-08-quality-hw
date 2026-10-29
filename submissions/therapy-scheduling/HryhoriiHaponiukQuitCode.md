@@ -46,6 +46,6 @@
 
 ## Бонус
 
-UAT у CI: зелений прогін `workflow_dispatch` — https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling/actions/runs/40907043406.
+UAT у CI: зелений прогін `workflow_dispatch` — https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling/actions/runs/40907043406
 
 `.github/workflows/e2e.yml` запускає ті самі специфікації Playwright, що й UAT на проді, але на одноразовому локальному стеку Supabase в раннері, без хмарних секретів. «Дано» AC-CARD-05 (клієнт, свій лише для therapist2) створює фікстура `tests/e2e/fixtures/card-05-given.sql`. На проді те саме «Дано» підготовлено один раз через інтерфейс. Після зеленого прогону на `main` `e2e` став обов'язковою перевіркою `solo-main`. Наслідок: ці три AC перевіряються в браузері на кожному PR, а не лише в ручному UAT. Перший прогін на гілці впав (https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling/actions/runs/40865220803): знімок картки «до» брався через `innerText` з переносами рядків, а `toHaveText` порівнює `textContent`. Виправлено на `textContent`. Тест, який на проді проходив, у CI виявив нестабільне порівняння.
